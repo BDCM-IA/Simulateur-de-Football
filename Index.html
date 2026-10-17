@@ -1,0 +1,729 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratoire tactique | Football</title>
+<style>
+:root {
+  --bg:#0b1220; --panel:#131e30; --line:#2c3c53;
+  --text:#f0f5ff; --muted:#9fb0c9; --green:#62e6ae;
+  --blue:#79b9ff;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+header {
+  padding:25px; border-bottom:1px solid var(--line);
+  background:#101a2b;
+}
+header h1 { margin:0 0 8px; font-size:27px; }
+header p { margin:0; color:var(--muted); }
+main {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:18px; padding:20px; max-width:1500px; margin:auto;
+}
+.panel {
+  background:var(--panel); border:1px solid var(--line);
+  border-radius:14px; padding:18px; min-width:0;
+}
+.panel h2 { margin:0 0 16px; font-size:19px; }
+.full { grid-column:1/-1; }
+label {
+  display:block; font-size:13px; color:var(--muted);
+  margin:12px 0 6px;
+}
+input,select,button {
+  font:inherit; border-radius:8px;
+}
+input[type=text],input[type=number],select {
+  width:100%; padding:10px; background:#091321;
+  border:1px solid #34465f; color:white;
+}
+input[type=range] { width:100%; accent-color:var(--green); }
+button {
+  cursor:pointer; padding:10px 13px; border:0;
+  background:var(--green); color:#08251a; font-weight:bold;
+}
+button.secondary {
+  background:#253750; color:white;
+  border:1px solid #40536e;
+}
+button:hover { filter:brightness(1.1); }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.small { font-size:12px; color:var(--muted); }
+.pitch {
+  position:relative; width:100%; aspect-ratio:0.8;
+  max-height:680px; background:#116044;
+  border:2px solid #a6dfc1; border-radius:8px;
+  overflow:hidden;
+}
+.pitch:before {
+  content:""; position:absolute; top:50%; left:0; right:0;
+  border-top:2px solid #a6dfc1;
+}
+.pitch:after {
+  content:""; position:absolute; width:24%; aspect-ratio:1;
+  border:2px solid #a6dfc1; border-radius:50%;
+  left:38%; top:38%;
+}
+.boxline {
+  position:absolute; left:20%; width:60%; height:15%;
+  border:2px solid #a6dfc1;
+}
+.boxline.top { top:0; }
+.boxline.bottom { bottom:0; }
+.players { position:absolute; inset:0; z-index:2; }
+.pawn {
+  position:absolute; transform:translate(-50%,-50%);
+  width:60px; min-height:47px; padding:5px 2px;
+  border-radius:10px; border:2px solid #a9ceff;
+  background:#152b48; color:white; font-size:11px;
+  line-height:1.2; overflow-wrap:anywhere;
+}
+.pawn.active { border:3px solid #fff28c; background:#17644b; }
+.player-list {
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:7px; margin-top:12px;
+}
+.player-btn {
+  background:#0b1626; color:white; text-align:left;
+  border:1px solid #33455f; font-size:12px;
+}
+.player-btn.active { border-color:var(--green); }
+.stats {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
+}
+.stat {
+  padding:14px; background:#0b1626;
+  border:1px solid var(--line); border-radius:10px;
+}
+.stat span { color:var(--muted); font-size:12px; }
+.stat strong { display:block; font-size:28px; margin-top:6px; }
+.bar { height:8px; background:#2a3b51; border-radius:8px; overflow:hidden; }
+.bar div { height:100%; background:var(--green); }
+.metric { margin:14px 0; }
+.metric-head { display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; }
+.result {
+  padding:13px; margin-top:12px; border-radius:10px;
+  background:#102c26; border:1px solid #28634e;
+}
+.result p { line-height:1.5; }
+footer { padding:20px; text-align:center; color:var(--muted); font-size:12px; }
+@media(max-width:850px) {
+  main { grid-template-columns:1fr; padding:12px; }
+  .full { grid-column:auto; }
+  header { padding:20px; }
+}
+@media(max-width:420px) {
+  .grid { grid-template-columns:1fr; }
+  .pawn { width:49px; font-size:9px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚽ Laboratoire tactique</h1>
+  <p>Construire, tester et optimiser une composition de football.</p>
+  <p class="small">Outil d'analyse tactique — pas un jeu de match.</p>
+</header>
+
+<main>
+
+<section class="panel">
+  <h2>1. Contexte de l'équipe</h2>
+  <div class="grid">
+    <div>
+      <label>Catégorie</label>
+      <select id="category">
+        <option>U13</option><option>U14</option>
+        <option>U15</option><option selected>U16</option>
+        <option>U17</option><option>U18</option>
+        <option>Seniors</option>
+      </select>
+    </div>
+    <div>
+      <label>Division</label>
+      <select id="division">
+        <option>D1</option><option>D2</option>
+        <option selected>D3</option><option>D4</option>
+        <option>Régional</option><option>National</option>
+      </select>
+    </div>
+    <div>
+      <label>Département / ligue</label>
+      <input id="region" value="Yvelines">
+    </div>
+    <div>
+      <label>Formation</label>
+      <select id="formation">
+        <option>4-3-3</option>
+        <option selected>4-2-3-1</option>
+        <option>4-4-2</option>
+        <option>3-5-2</option>
+        <option>3-4-3</option>
+        <option>4-1-4-1</option>
+      </select>
+    </div>
+  </div>
+  <p class="small">Le niveau permet de décrire le contexte. Les notes ne sont pas automatiquement calibrées sur les statistiques réelles de la division.</p>
+</section>
+
+<section class="panel">
+  <h2>2. Consignes collectives</h2>
+  <div id="tactics"></div>
+  <div class="grid">
+    <div>
+      <label>Relance</label>
+      <select id="build">
+        <option value="short">Courte</option>
+        <option value="mixed" selected>Mixte</option>
+        <option value="long">Longue</option>
+      </select>
+    </div>
+    <div>
+      <label>Transition offensive</label>
+      <select id="transition">
+        <option value="keep">Conserver le ballon</option>
+        <option value="counter" selected>Se projeter rapidement</option>
+        <option value="wide">Chercher les côtés</option>
+      </select>
+    </div>
+    <div>
+      <label>Défense</label>
+      <select id="defense">
+        <option value="zone" selected>Défense de zone</option>
+        <option value="man">Marquage individuel</option>
+        <option value="hybrid">Hybride</option>
+      </select>
+    </div>
+    <div>
+      <label>Priorité</label>
+      <select id="focus">
+        <option value="balanced">Équilibre</option>
+        <option value="possession">Possession</option>
+        <option value="pressing">Récupération haute</option>
+        <option value="attack">Création d'occasions</option>
+        <option value="defense">Solidité défensive</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>3. Terrain tactique</h2>
+  <p class="small">Sélectionne un joueur pour modifier son profil.</p>
+  <div class="pitch">
+    <div class="boxline top"></div>
+    <div class="boxline bottom"></div>
+    <div class="players" id="pitchPlayers"></div>
+  </div>
+  <div class="player-list" id="playerList"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="secondary" id="reset">Réinitialiser</button>
+    <button class="secondary" id="export">Exporter JSON</button>
+    <label for="importFile" style="display:inline-flex;align-items:center;margin:0">
+      <span class="small" style="cursor:pointer;background:#253750;padding:11px;border-radius:8px">Importer JSON</span>
+    </label>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>4. Modifier un joueur</h2>
+  <label>Nom</label>
+  <input id="playerName" type="text">
+  <label>Poste / rôle</label>
+  <select id="playerRole">
+    <option>GB</option><option>DC</option><option>DD</option>
+    <option>DG</option><option>Sentinelle</option><option>MC</option>
+    <option>Relayeur</option><option>MOC</option><option>AD</option>
+    <option>AG</option><option>BU</option>
+  </select>
+  <div id="playerStats"></div>
+  <button id="savePlayer" style="margin-top:15px">Appliquer les modifications</button>
+  <p class="small">Les attributs vont de 1 à 100. Une note élevée représente une qualité plus développée.</p>
+</section>
+
+<section class="panel full">
+  <h2>5. Analyse et optimisation</h2>
+  <p class="small">Les agents tactiques évaluent la compatibilité des joueurs, l'équilibre collectif et la cohérence des consignes. Ils ne simulent pas de match.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+    <button id="analyze">Analyser ma composition</button>
+    <button class="secondary" id="compare">Comparer les formations</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><span>Cohérence générale</span><strong id="overall">—</strong></div>
+    <div class="stat"><span>Compatibilité des profils</span><strong id="roles">—</strong></div>
+    <div class="stat"><span>Équilibre défensif</span><strong id="defScore">—</strong></div>
+    <div class="stat"><span>Potentiel offensif</span><strong id="attScore">—</strong></div>
+  </div>
+  <div id="metrics"></div>
+  <div class="result" id="recommendation" hidden></div>
+  <div id="comparison"></div>
+  <p class="small">Les scores sont des indicateurs heuristiques. Ils aident à comparer des hypothèses, mais ne constituent pas des probabilités de victoire ni une garantie de performance réelle.</p>
+</section>
+
+</main>
+<footer>Laboratoire tactique — prototype autonome. Les données restent dans ton navigateur, sauf si tu choisis de les exporter.</footer>
+
+<script>
+"use strict";
+
+const attributes = [
+  ["Vitesse","speed"],
+  ["Accélération","accel"],
+  ["Force physique","strength"],
+  ["Endurance","stamina"],
+  ["Technique","technique"],
+  ["Passe","passing"],
+  ["Vision du jeu","vision"],
+  ["Défense","defending"],
+  ["Finition","finishing"],
+  ["Décision","decision"]
+];
+
+const defaults = [
+ ["Gardien","GB",50,65,35,45,55,65,75,55,60,70],
+ ["Latéral droit","DD",78,82,68,72,65,70,70,72,65,68],
+ ["Défenseur central 1","DC",65,62,82,68,58,72,70,78,55,68],
+ ["Défenseur central 2","DC",68,64,80,70,60,75,68,80,58,70],
+ ["Latéral gauche","DG",80,84,66,73,67,70,72,70,67,69],
+ ["Sentinelle","Sentinelle",65,66,70,75,78,82,75,76,72,79],
+ ["Relayeur droit","Relayeur",76,78,62,80,78,78,73,67,77,76],
+ ["Relayeur gauche","MC",74,75,60,82,80,76,74,65,78,74],
+ ["Ailier droit","AD",88,90,48,74,73,62,75,48,82,66],
+ ["Ailier gauche","AG",86,88,46,75,74,60,76,47,80,65],
+ ["Avant-centre","BU",80,83,65,70,68,70,73,65,82,74]
+];
+
+const formations = {
+ "4-3-3":[[50,11],[18,28],[39,23],[61,23],[82,28],[50,42],[35,53],[65,53],[18,70],[82,70],[50,83]],
+ "4-2-3-1":[[50,11],[18,28],[39,23],[61,23],[82,28],[41,42],[59,42],[18,60],[50,56],[82,60],[50,80]],
+ "4-4-2":[[50,11],[18,28],[39,23],[61,23],[82,28],[18,47],[39,46],[61,46],[82,47],[39,76],[61,76]],
+ "3-5-2":[[50,11],[29,25],[50,23],[71,25],[13,46],[32,42],[50,47],[68,42],[87,46],[39,75],[61,75]],
+ "3-4-3":[[50,11],[29,25],[50,23],[71,25],[18,46],[39,45],[61,45],[82,46],[20,72],[50,75],[80,72]],
+ "4-1-4-1":[[50,11],[18,28],[39,23],[61,23],[82,28],[50,38],[18,54],[39,52],[61,52],[82,54],[50,80]]
+};
+
+let players = [];
+let selected = 0;
+
+function makeDefaults() {
+  return defaults.map((p,i)=>({
+    id:i+1,name:p[0],role:p[1],
+    speed:p[2],accel:p[3],strength:p[4],stamina:p[5],
+    technique:p[6],passing:p[7],vision:p[8],
+    defending:p[9],finishing:p[10],decision:p[11]
+  }));
+}
+players = makeDefaults();
+
+const $ = id => document.getElementById(id);
+const clamp = n => Math.max(0,Math.min(100,Math.round(n)));
+const avg = (arr,key) => arr.length
+  ? arr.reduce((s,p)=>s+p[key],0)/arr.length : 0;
+
+function safeText(value) {
+  return String(value).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function shortName(name) {
+  return name.length>10 ? name.slice(0,9)+"…" : name;
+}
+
+function renderPitch() {
+  const coords = formations[$("formation").value];
+  $("pitchPlayers").innerHTML = players.map((p,i)=>`
+    <button class="pawn ${i===selected?"active":""}"
+      style="left:${coords[i][0]}%;top:${coords[i][1]}%"
+      data-player="${i}" title="Modifier ${safeText(p.name)}">
+      ${i+1}. ${safeText(shortName(p.name))}
+      <br>${safeText(p.role)}
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".pawn").forEach(b=>{
+    b.onclick=()=>selectPlayer(Number(b.dataset.player));
+  });
+
+  $("playerList").innerHTML = players.map((p,i)=>`
+    <button class="player-btn ${i===selected?"active":""}"
+      data-player="${i}">
+      ${i+1}. ${safeText(p.name)}
+      <br><span class="small">${safeText(p.role)} · VIT ${p.speed}</span>
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".player-btn").forEach(b=>{
+    b.onclick=()=>selectPlayer(Number(b.dataset.player));
+  });
+}
+
+function renderEditor() {
+  const p=players[selected];
+  $("playerName").value=p.name;
+  $("playerRole").value=p.role;
+
+  $("playerStats").innerHTML=attributes.map(([label,key])=>`
+    <div class="metric">
+      <div class="metric-head">
+        <label for="attr-${key}" style="margin:0">${label}</label>
+        <strong id="value-${key}">${p[key]}</strong>
+      </div>
+      <input id="attr-${key}" type="range" min="1" max="100" value="${p[key]}">
+    </div>
+  `).join("");
+
+  attributes.forEach(([label,key])=>{
+    $("attr-"+key).addEventListener("input",e=>{
+      $("value-"+key).textContent=e.target.value;
+    });
+  });
+}
+
+function selectPlayer(i) {
+  selected=i;
+  renderPitch();
+  renderEditor();
+}
+
+function setupTactics() {
+  const sliders=[
+    ["pressing","Intensité du pressing",65],
+    ["block","Hauteur du bloc",60],
+    ["width","Largeur offensive",65],
+    ["depth","Profondeur des appels",60],
+    ["tempo","Rythme de circulation",55],
+    ["risk","Risque à la passe",45]
+  ];
+
+  $("tactics").innerHTML=sliders.map(([id,label,value])=>`
+    <div class="metric">
+      <div class="metric-head">
+        <label for="${id}" style="margin:0">${label}</label>
+        <strong id="${id}Value">${value}/100</strong>
+      </div>
+      <input id="${id}" type="range" min="0" max="100" value="${value}">
+    </div>
+  `).join("");
+
+  sliders.forEach(([id])=>{
+    $(id).addEventListener("input",()=>{
+      $(id+"Value").textContent=$(id).value+"/100";
+    });
+  });
+}
+
+$("savePlayer").onclick=()=>{
+  const p=players[selected];
+  p.name=$("playerName").value.trim() || "Joueur "+(selected+1);
+  p.role=$("playerRole").value;
+  attributes.forEach(([label,key])=>{
+    p[key]=Number($("attr-"+key).value);
+  });
+  renderPitch();
+  renderEditor();
+};
+
+$("formation").addEventListener("change",renderPitch);
+
+$("reset").onclick=()=>{
+  players=makeDefaults();
+  selected=0;
+  renderPitch();
+  renderEditor();
+  $("comparison").innerHTML="";
+  $("recommendation").hidden=true;
+};
+
+function evaluate(formation) {
+  const t=id=>Number($(id).value);
+  const defenders=players.slice(1,5);
+  const midfield=players.slice(5,8);
+  const forwards=players.slice(8);
+
+  const pressing=t("pressing");
+  const block=t("block");
+  const width=t("width");
+  const depth=t("depth");
+  const tempo=t("tempo");
+  const risk=t("risk");
+
+  const technique=avg(players,"technique");
+  const decision=avg(players,"decision");
+  const stamina=avg(players,"stamina");
+
+  const roleFit=clamp(
+    decision*.25+technique*.15+
+    avg(players,"passing")*.15+
+    avg(players,"vision")*.15+
+    stamina*.10+avg(players,"speed")*.10+
+    avg(players,"defending")*.10
+  );
+
+  let defense=clamp(
+    avg(defenders,"defending")*.30+
+    avg(defenders,"strength")*.18+
+    avg(defenders,"decision")*.16+
+    avg(defenders,"stamina")*.12+
+    avg(midfield,"defending")*.10+
+    (100-Math.abs(block-55))*.07+
+    (100-Math.abs(pressing-55))*.07
+  );
+
+  let attack=clamp(
+    avg(forwards,"speed")*.15+
+    avg(forwards,"accel")*.12+
+    avg(forwards,"finishing")*.18+
+    avg(forwards,"technique")*.15+
+    avg(midfield,"passing")*.12+
+    avg(midfield,"vision")*.12+
+    width*.07+depth*.05+risk*.04
+  );
+
+  let possession=clamp(
+    avg(midfield,"passing")*.25+
+    avg(midfield,"vision")*.20+
+    avg(midfield,"technique")*.20+
+    decision*.12+technique*.10+
+    (100-risk)*.07+(100-Math.abs(tempo-55))*.06
+  );
+
+  let transition=clamp(
+    avg(forwards,"speed")*.22+
+    avg(forwards,"accel")*.18+
+    depth*.15+pressing*.10+
+    stamina*.10+decision*.10+
+    avg(midfield,"passing")*.10+
+    ($("transition").value==="counter"?5:0)
+  );
+
+  let pressingScore=clamp(
+    stamina*.25+avg(players,"accel")*.15+
+    decision*.15+pressing*.25+block*.10+
+    avg(midfield,"defending")*.10
+  );
+
+  let structure=clamp(
+    100-Math.abs(width-58)*.20-
+    Math.abs(depth-60)*.12-
+    Math.abs(block-58)*.12-
+    Math.abs(pressing-58)*.10-
+    Math.abs(tempo-55)*.08+
+    decision*.22
+  );
+
+  if($("build").value==="short") possession=clamp(possession+5);
+  if($("build").value==="long") {
+    attack=clamp(attack+avg(forwards,"speed")*.05-3);
+  }
+  if($("defense").value==="zone") defense=clamp(defense+4);
+  if($("defense").value==="man") {
+    defense=clamp(defense-4+stamina*.04);
+  }
+  if($("transition").value==="keep") possession=clamp(possession+4);
+  if($("transition").value==="wide") attack=clamp(attack+width*.05);
+
+  if(formation==="4-3-3") attack=clamp(attack+3);
+  if(formation==="4-2-3-1") structure=clamp(structure+3);
+  if(formation==="3-5-2") {
+    defense=clamp(defense-2);
+    possession=clamp(possession+3);
+  }
+  if(formation==="3-4-3") attack=clamp(attack+4);
+
+  const focus=$("focus").value;
+  if(focus==="possession") possession=clamp(possession+5);
+  if(focus==="pressing") pressingScore=clamp(pressingScore+5);
+  if(focus==="attack") attack=clamp(attack+5);
+  if(focus==="defense") defense=clamp(defense+5);
+
+  const overall=clamp(
+    roleFit*.20+defense*.23+attack*.23+
+    possession*.15+transition*.10+structure*.09
+  );
+
+  return {overall,roleFit,defense,attack,possession,transition,pressingScore,structure};
+}
+
+function addMetric(label,value) {
+  return `<div class="metric">
+    <div class="metric-head"><span>${label}</span><strong>${value}/100</strong></div>
+    <div class="bar"><div style="width:${value}%"></div></div>
+  </div>`;
+}
+
+function analyze() {
+  const r=evaluate($("formation").value);
+  $("overall").textContent=r.overall;
+  $("roles").textContent=r.roleFit;
+  $("defScore").textContent=r.defense;
+  $("attScore").textContent=r.attack;
+
+  $("metrics").innerHTML=
+    addMetric("Possession potentielle",r.possession)+
+    addMetric("Transitions",r.transition)+
+    addMetric("Pressing",r.pressingScore)+
+    addMetric("Structure collective",r.structure);
+
+  const scores=[
+    ["Possession",r.possession],
+    ["Transitions",r.transition],
+    ["Pressing",r.pressingScore],
+    ["Structure",r.structure],
+    ["Défense",r.defense],
+    ["Attaque",r.attack]
+  ].sort((a,b)=>b[1]-a[1]);
+
+  const weakest=scores[scores.length-1][0];
+  const advice={
+    "Possession":"Teste une relance plus courte, des angles de passe plus nombreux et moins de risques inutiles.",
+    "Transitions":"Observe la qualité de la première passe après récupération et la coordination des appels.",
+    "Pressing":"Vérifie les distances entre les lignes et la capacité de l'effectif à répéter les efforts.",
+    "Structure":"Teste progressivement la largeur, la profondeur et la hauteur du bloc pour garder les lignes connectées.",
+    "Défense":"Évalue la couverture des espaces et la protection devant la défense.",
+    "Attaque":"Vérifie la complémentarité entre créateurs, joueurs de profondeur et finisseurs."
+  };
+
+  const priority=$("focus").value;
+  const focusText={
+    balanced:"l'équilibre collectif",
+    possession:"la conservation du ballon",
+    pressing:"la récupération haute",
+    attack:"la création offensive",
+    defense:"la sécurité défensive"
+  }[priority];
+
+  $("recommendation").hidden=false;
+  $("recommendation").innerHTML=`
+    <strong>Interprétation du test</strong>
+    <p>Indice général : <b>${r.overall}/100</b>. Ce résultat mesure la cohérence selon les règles actuelles du modèle.</p>
+    <p><b>Axe à examiner :</b> ${advice[weakest]}</p>
+    <p><b>Priorité choisie :</b> ${focusText}.</p>
+    <p>Essaie de modifier un seul paramètre à la fois, puis relance l'analyse pour voir comment les indicateurs évoluent.</p>
+  `;
+  return r;
+}
+
+$("analyze").onclick=analyze;
+
+$("compare").onclick=()=>{
+  const current=$("formation").value;
+  const results=Object.keys(formations).map(f=>({
+    formation:f,...evaluate(f)
+  })).sort((a,b)=>b.overall-a.overall);
+
+  $("comparison").innerHTML=
+    "<h3>Comparaison des systèmes</h3>"+
+    "<p class='small'>Même effectif et mêmes consignes pour chaque système. Le classement dépend du modèle heuristique.</p>"+
+    results.map((r,i)=>`
+      <div class="metric">
+        <div class="metric-head">
+          <span>${i+1}. ${r.formation}${r.formation===current?" (actuel)":""}</span>
+          <strong>${r.overall}/100</strong>
+        </div>
+        <div class="bar"><div style="width:${r.overall}%"></div></div>
+        <div class="small">Attaque ${r.attack} · Défense ${r.defense} · Possession ${r.possession}</div>
+      </div>
+    `).join("")+
+    `<button id="applyBest" style="margin-top:12px">Appliquer le système en tête</button>`;
+
+  $("applyBest").onclick=()=>{
+    $("formation").value=results[0].formation;
+    renderPitch();
+    analyze();
+    $("comparison").innerHTML="";
+  };
+};
+
+function configuration() {
+  return {
+    version:1,
+    context:{
+      category:$("category").value,
+      division:$("division").value,
+      region:$("region").value,
+      formation:$("formation").value
+    },
+    tactics:Object.fromEntries(
+      ["pressing","block","width","depth","tempo","risk","build","transition","defense","focus"]
+        .map(id=>[id,$(id).value])
+    ),
+    players
+  };
+}
+
+$("export").onclick=()=>{
+  const blob=new Blob([JSON.stringify(configuration(),null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="configuration-tactique.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+$("importFile").onchange=async event=>{
+  const file=event.target.files[0];
+  if(!file)return;
+
+  try {
+    const data=JSON.parse(await file.text());
+    if(!data.context || !Array.isArray(data.players) || data.players.length!==11) {
+      throw new Error("Format invalide : il faut une configuration avec 11 joueurs.");
+    }
+
+    const validPlayers=data.players.every(p=>
+      typeof p.name==="string" &&
+      attributes.every(([label,key])=>
+        Number.isFinite(Number(p[key])) &&
+        Number(p[key])>=1 && Number(p[key])<=100
+      )
+    );
+
+    if(!validPlayers) throw new Error("Les attributs des joueurs sont invalides.");
+
+    players=data.players.map((p,i)=>({
+      ...p,id:i+1,
+      name:String(p.name).slice(0,60),
+      role:String(p.role||"MC")
+    }));
+
+    ["category","division","region","formation"].forEach(key=>{
+      if(data.context[key]!==undefined) $(key).value=data.context[key];
+    });
+
+    if(data.tactics) {
+      Object.entries(data.tactics).forEach(([key,value])=>{
+        const element=$(key);
+        if(element) element.value=value;
+      });
+    }
+
+    selected=0;
+    setupTactics();
+    renderPitch();
+    renderEditor();
+    analyze();
+    alert("Configuration importée.");
+  } catch(error) {
+    alert("Impossible d'importer ce fichier : "+error.message);
+  } finally {
+    event.target.value="";
+  }
+};
+
+setupTactics();
+renderPitch();
+renderEditor();
+analyze();
+</script>
+</body>
+</html>
