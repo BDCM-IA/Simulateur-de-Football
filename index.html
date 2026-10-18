@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080909">
-<title>FootLab — Football Manager</title>
+<title>FootLab — Simulateur de football</title>
 <style>
 :root {
   --bg:#080909; --panel:#111313; --panel2:#181b19;
@@ -314,6 +314,7 @@ hr{border:0;border-top:1px solid var(--border);margin:20px 0}
         <p class="sub">2. Créer une table de profils et de données avec des règles RLS pour que chaque utilisateur n'accède qu'à ses propres données.</p>
         <p class="sub">3. Ajouter l'URL du projet et sa clé publique ci-contre.</p>
         <p class="sub">4. Configurer les URL de redirection de connexion pour ton site GitHub Pages.</p>
+        <p class="sub">5. Dans Supabase &gt; SQL Editor, exécuter le SQL de création de la table <code>teams</code> et des règles RLS fourni avec les instructions sous le fichier.</p>
         <hr>
         <p class="sub">Cette page ne déclare pas un compte « permanent » tant que le backend n'a pas été configuré et testé. La sauvegarde locale fonctionne indépendamment.</p>
       </div>
@@ -322,6 +323,7 @@ hr{border:0;border-top:1px solid var(--border);margin:20px 0}
 </main>
 <footer>FOOT<span class="yellow">LAB</span> · Ton football, tes données, tes décisions.</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
 
@@ -335,6 +337,7 @@ const DEFAULT_DATA = {
 let data = loadData();
 let supabaseClient = null;
 let cloudUser = null;
+let cloudReady = false;
 let lastScoutReport = "";
 
 function loadData(){
@@ -356,6 +359,12 @@ function persist(){
   try{
     localStorage.setItem(STORE_KEY,JSON.stringify(data));
     renderDashboard();
+    if (cloudUser && cloudReady && supabaseClient) {
+      saveCloudData().catch(err => {
+        const status = document.getElementById("authStatus");
+        if (status) status.textContent = "Sauvegarde locale faite ; synchronisation cloud impossible : " + (err?.message || "erreur inconnue");
+      });
+    }
   }catch(e){alert("Impossible de sauvegarder les données locales. Vérifie l'espace disponible du navigateur.")}
 }
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
@@ -379,15 +388,27 @@ function go(id){
   if(id==="account")fillBackend();
   renderDashboard();
 }
+
 function renderDashboard(){
-  const n=document.getElementById("homePlayers");
-  if(!n)return;
-  n.textContent=data.players.length;
-  n=document.getElementById("homeRating");
-  const avg=data.players.length?Math.round(data.players.reduce((s,p)=>s+averagePlayer(p),0)/data.players.length):null;
-  n.textContent=avg===null?"—":avg+"/100";
-  document.getElementById("homeTests").textContent=data.tests.length;
+  const playersEl = document.getElementById("homePlayers");
+  const ratingEl = document.getElementById("homeRating");
+  const testsEl = document.getElementById("homeTests");
+
+  if (!playersEl || !ratingEl || !testsEl) return;
+
+  playersEl.textContent = data.players.length;
+
+  const avg = data.players.length
+    ? Math.round(
+        data.players.reduce((sum, p) => sum + averagePlayer(p), 0)
+        / data.players.length
+      )
+    : null;
+
+  ratingEl.textContent = avg === null ? "—" : avg + "/100";
+  testsEl.textContent = data.tests.length;
 }
+
 function fillTeam(){
   for(const [key,id] of Object.entries({name:"clubName",category:"clubCategory",league:"clubLeague",season:"clubSeason",notes:"clubNotes"}))
     document.getElementById(id).value=data.team[key]||"";
@@ -562,35 +583,158 @@ function saveBackend(){
   if(url&&!isHttpUrl(url)){alert("URL de projet invalide.");return}
   data.backend={url,key};persist();initSupabase();
 }
-function initSupabase(){
-  const {url,key}=data.backend;
-  if(!url||!key){supabaseClient=null;return}
-  if(!window.supabase){alert("Le module Supabase n'a pas été chargé. Vérifie ta connexion internet et recharge la page.");return}
-  supabaseClient=window.supabase.createClient(url,key);
-  document.getElementById("authStatus").textContent="Configuration enregistrée. Tu peux créer un compte ou te connecter.";
-}
-async function auth(action){
-  if(action==="logout"){
-    if(supabaseClient)await supabaseClient.auth.signOut();
-    cloudUser=null;fillBackend();return;
+async function initSupabase(){
+  const status = document.getElementById("authStatus");
+  const url = (data.backend.url || "").trim();
+  const key = (data.backend.key || "").trim();
+  if (!url || !key) {
+    supabaseClient = null;
+    cloudReady = false;
+    status.textContent = "La connexion en ligne n'est pas encore configurée.";
+    return;
   }
-  if(!supabaseClient){alert("Configure d'abord l'URL et la clé publique Supabase.");return}
-  const email=accountEmail.value.trim(),password=accountPassword.value;
-  if(!email||!password){alert("Entre ton e-mail et ton mot de passe.");return}
-  if(password.length<8){alert("Utilise un mot de passe d'au moins 8 caractères.");return}
-  try{
-    const result=action==="signup"
-      ?await supabaseClient.auth.signUp({email,password})
-      :await supabaseClient.auth.signInWithPassword({email,password});
-    if(result.error)throw result.error;
-    cloudUser=result.data.user||null;
-    document.getElementById("authStatus").textContent=action==="signup"?"Demande de création envoyée. Vérifie ton e-mail si une confirmation est requise.":"Connexion effectuée.";
-    fillBackend();
-  }catch(err){document.getElementById("authStatus").textContent="Connexion impossible : "+err.message}
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    status.textContent = "La bibliothèque Supabase n'a pas été chargée. Recharge la page puis réessaie.";
+    return;
+  }
+  try {
+    supabaseClient = window.supabase.createClient(url, key);
+    const { data: result, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+    if (result.session?.user) {
+      cloudUser = result.session.user;
+      await loadCloudData();
+    } else {
+      cloudUser = null;
+      cloudReady = false;
+      status.textContent = "Prêt : crée un compte ou connecte-toi.";
+    }
+  } catch (err) {
+    cloudReady = false;
+    status.textContent = "Initialisation impossible : " + (err?.message || "erreur inconnue");
+  }
 }
+
+async function auth(action){
+  const status = document.getElementById("authStatus");
+  try {
+    if (action === "logout") {
+      if (supabaseClient) {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+      }
+      cloudUser = null;
+      cloudReady = false;
+      status.textContent = "Déconnecté. Les données locales restent sur cet appareil.";
+      fillBackend();
+      return;
+    }
+    if (!supabaseClient) {
+      status.textContent = "Connexion indisponible. Vérifie l'URL et la clé publique Supabase.";
+      return;
+    }
+    const email = document.getElementById("accountEmail").value.trim();
+    const password = document.getElementById("accountPassword").value;
+    if (!email || !password) {
+      status.textContent = "Entre ton e-mail et ton mot de passe.";
+      return;
+    }
+    if (password.length < 8) {
+      status.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+      return;
+    }
+    if (action === "signup") {
+      const { data: result, error } = await supabaseClient.auth.signUp({
+        email, password,
+        options: { emailRedirectTo: window.location.origin + window.location.pathname }
+      });
+      if (error) throw error;
+      if (result.session && result.user) {
+        cloudUser = result.user;
+        await loadCloudData();
+      } else {
+        status.textContent = "Compte créé. Vérifie tes e-mails pour confirmer ton adresse, puis connecte-toi.";
+      }
+      return;
+    }
+    const { data: result, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    cloudUser = result.user;
+    await loadCloudData();
+  } catch (err) {
+    status.textContent = "Erreur : " + (err?.message || "connexion impossible");
+  }
+}
+
+async function loadCloudData(){
+  if (!supabaseClient || !cloudUser) return;
+  const status = document.getElementById("authStatus");
+  status.textContent = "Chargement des données en ligne…";
+  const { data: row, error } = await supabaseClient
+    .from("teams")
+    .select("data,name")
+    .eq("user_id", cloudUser.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (row && row.data && typeof row.data === "object") {
+    const cloudData = row.data;
+    data = {
+      ...structuredClone(DEFAULT_DATA),
+      ...cloudData,
+      team: { ...DEFAULT_DATA.team, ...(cloudData.team || {}) },
+      match: { ...DEFAULT_DATA.match, ...(cloudData.match || {}) },
+      tactics: { ...DEFAULT_DATA.tactics, ...(cloudData.tactics || {}) },
+      backend: { ...data.backend },
+      players: Array.isArray(cloudData.players) ? cloudData.players : [],
+      tests: Array.isArray(cloudData.tests) ? cloudData.tests : []
+    };
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } else {
+    // Première connexion : conserve les données locales et les envoie au compte.
+    await saveCloudData();
+  }
+  cloudReady = true;
+  fillTeam();
+  fillTactics();
+  renderPlayers();
+  renderDashboard();
+  renderTests();
+  renderLineup();
+  renderScore();
+  fillBackend();
+  status.textContent = "Connecté : " + (cloudUser.email || "compte en ligne") + " · synchronisation activée.";
+}
+
+async function saveCloudData(){
+  if (!supabaseClient || !cloudUser) throw new Error("Connecte-toi avant de synchroniser.");
+  const cloudCopy = JSON.parse(JSON.stringify(data));
+  // La configuration de connexion reste uniquement sur cet appareil.
+  cloudCopy.backend = { url: "", key: "" };
+  const payload = {
+    user_id: cloudUser.id,
+    name: data.team.name || "Mon équipe FootLab",
+    data: cloudCopy,
+    updated_at: new Date().toISOString()
+  };
+  const { error } = await supabaseClient.from("teams").upsert(payload, { onConflict: "user_id" });
+  if (error) throw error;
+}
+
 async function syncCloud(){
-  if(!supabaseClient||!cloudUser){alert("Connecte-toi à ton compte en ligne avant de synchroniser.");return}
-  alert("L'authentification est configurée, mais la synchronisation complète nécessite de créer la table cloud et ses règles RLS. Elle n'est pas activée par ce fichier seul.");
+  const status = document.getElementById("authStatus");
+  if (!supabaseClient || !cloudUser) {
+    status.textContent = "Connecte-toi à ton compte en ligne avant de synchroniser.";
+    return;
+  }
+  status.textContent = "Synchronisation en cours…";
+  try {
+    await saveCloudData();
+    cloudReady = true;
+    status.textContent = "Synchronisation terminée : tes données sont enregistrées en ligne.";
+  } catch (err) {
+    cloudReady = false;
+    status.textContent = "Synchronisation impossible : " + (err?.message || "vérifie la table teams et ses règles RLS dans Supabase.");
+  }
 }
 function exportData(){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
@@ -624,14 +768,9 @@ function init(){
   renderDashboard();
   renderTests();
   renderScore();
-  if(data.backend.url&&data.backend.key){
-    backendUrl.value=data.backend.url;backendKey.value=data.backend.key;
-    const script=document.createElement("script");
-    script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-    script.onload=initSupabase;
-    script.onerror=()=>document.getElementById("authStatus").textContent="Impossible de charger Supabase.";
-    document.head.appendChild(script);
-  }
+  backendUrl.value=data.backend.url||"";
+  backendKey.value=data.backend.key||"";
+  if(data.backend.url && data.backend.key) initSupabase();
   if(data.scout){
     scoutOpponent.value=data.scout.opponent||"";
     scoutFormation.value=data.scout.formation||"";
