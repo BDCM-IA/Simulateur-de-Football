@@ -2,2999 +2,645 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101510">
-  <meta name="description" content="FootLab TACTIQUE — Analyse ton équipe, compare les formations et construis tes compositions idéales.">
-
-  <link rel="icon" type="image/png" href="./logo.png">
-
-  <title>FootLab TACTIQUE</title>
-
-  <style>
-    :root {
-      --bg: #101510;
-      --panel: #191f19;
-      --panel-light: #222a22;
-      --border: #303a30;
-      --green: #77d66b;
-      --green-dark: #285d2c;
-      --text: #f2f5f0;
-      --muted: #9ba79a;
-      --danger: #e56b6b;
-      --warning: #e9bd65;
-      --radius: 14px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    button, input, select, textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible {
-      outline: 2px solid var(--green);
-      outline-offset: 2px;
-    }
-
-    .app {
-      display: grid;
-      grid-template-columns: 245px minmax(0, 1fr);
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      background: #151b15;
-      border-right: 1px solid var(--border);
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .brand {
-      padding: 0 10px;
-    }
-
-    .brand-name {
-      font-size: 21px;
-      font-weight: 800;
-      letter-spacing: -0.7px;
-    }
-
-    .brand-name span {
-      color: var(--green);
-    }
-
-    .brand-subtitle {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 4px;
-    }
-
-    .nav-label {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      padding: 0 10px;
-      margin-bottom: 7px;
-    }
-
-    .nav {
-      display: grid;
-      gap: 5px;
-    }
-
-    .nav button {
-      width: 100%;
-      text-align: left;
-      border: 1px solid transparent;
-      border-radius: 9px;
-      background: transparent;
-      color: #c7d0c5;
-      padding: 11px 12px;
-      transition: 0.15s;
-    }
-
-    .nav button:hover {
-      background: var(--panel-light);
-      color: white;
-    }
-
-    .nav button.active {
-      background: #243424;
-      color: var(--green);
-      border-color: #38533a;
-    }
-
-    .sidebar-bottom {
-      margin-top: auto;
-      border-top: 1px solid var(--border);
-      padding: 18px 8px 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .main {
-      min-width: 0;
-      padding: 28px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .page-title {
-      margin: 0;
-      font-size: 27px;
-      line-height: 1.2;
-      letter-spacing: -0.8px;
-    }
-
-    .page-description {
-      color: var(--muted);
-      margin: 8px 0 0;
-      max-width: 700px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 9px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: var(--panel-light);
-      color: var(--text);
-      border-radius: 9px;
-      padding: 10px 14px;
-      font-weight: 650;
-    }
-
-    .btn:hover {
-      filter: brightness(1.13);
-    }
-
-    .btn-primary {
-      background: var(--green);
-      color: #102010;
-      border-color: var(--green);
-    }
-
-    .btn-danger {
-      color: var(--danger);
-      border-color: #633535;
-      background: #301d1d;
-    }
-
-    .btn-small {
-      padding: 6px 9px;
-      font-size: 12px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .grid-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .card {
-      min-width: 0;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 750;
-      margin: 0 0 5px;
-    }
-
-    .card-description {
-      color: var(--muted);
-      margin: 0 0 17px;
-      font-size: 12px;
-    }
-
-    .stat-value {
-      font-size: 29px;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
-    }
-
-    .field label {
-      color: #cbd4c9;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      background: #111711;
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-      padding: 10px 11px;
-      min-width: 0;
-    }
-
-    .field textarea {
-      min-height: 85px;
-      resize: vertical;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 12px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid var(--border);
-      background: #242b24;
-      border-radius: 6px;
-      padding: 3px 7px;
-      font-size: 11px;
-      color: #dce5d9;
-      white-space: nowrap;
-    }
-
-    .badge-green {
-      background: #203823;
-      border-color: #375b39;
-      color: #9ce593;
-    }
-
-    .badge-red {
-      background: #3b2222;
-      border-color: #704040;
-      color: #ffaaaa;
-    }
-
-    .badge-yellow {
-      background: #3a3020;
-      border-color: #6b5732;
-      color: #f2d28d;
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .toolbar input,
-    .toolbar select {
-      background: #111711;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 11px;
-    }
-
-    .toolbar input {
-      min-width: 180px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 650px;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    th {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      background: #1c231c;
-    }
-
-    td {
-      font-size: 13px;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: 0;
-    }
-
-    tbody tr:hover {
-      background: #202820;
-    }
-
-    .actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .progress {
-      height: 6px;
-      border-radius: 99px;
-      background: #303830;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-
-    .progress > div {
-      height: 100%;
-      background: var(--green);
-      border-radius: inherit;
-    }
-
-    .pitch {
-      position: relative;
-      width: 100%;
-      max-width: 680px;
-      margin: 0 auto;
-      aspect-ratio: 0.78;
-      overflow: hidden;
-      border: 2px solid #759d71;
-      border-radius: 7px;
-      background: repeating-linear-gradient(
-        0deg,
-        #24532b 0,
-        #24532b 12.5%,
-        #2a5b31 12.5%,
-        #2a5b31 25%
-      );
-    }
-
-    .pitch::before {
-      content: "";
-      position: absolute;
-      inset: 2%;
-      border: 1px solid rgba(255,255,255,0.65);
-      pointer-events: none;
-    }
-
-    .pitch-lines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .pitch-half {
-      position: absolute;
-      left: 2%;
-      right: 2%;
-      top: 50%;
-      border-top: 1px solid rgba(255,255,255,0.65);
-    }
-
-    .pitch-circle {
-      position: absolute;
-      width: 27%;
-      aspect-ratio: 1;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      border: 1px solid rgba(255,255,255,0.65);
-      border-radius: 50%;
-    }
-
-    .pitch-box {
-      position: absolute;
-      left: 23%;
-      width: 54%;
-      height: 14%;
-      border: 1px solid rgba(255,255,255,0.65);
-    }
-
-    .pitch-box.top {
-      top: 2%;
-      border-top: 0;
-    }
-
-    .pitch-box.bottom {
-      bottom: 2%;
-      border-bottom: 0;
-    }
-
-    .player-marker {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      width: 82px;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .player-dot {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      background: #eaf5e7;
-      color: #163b1a;
-      border: 2px solid #a4e59b;
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 800;
-      box-shadow: 0 2px 8px #0005;
-    }
-
-    .player-name {
-      max-width: 82px;
-      padding: 2px 4px;
-      background: #142516e8;
-      color: white;
-      border-radius: 4px;
-      font-size: 10px;
-      overflow-wrap: anywhere;
-    }
-
-    .formation-card {
-      display: grid;
-      grid-template-columns: 95px minmax(0, 1fr);
-      gap: 14px;
-      align-items: center;
-      border: 1px solid var(--border);
-      background: #1c231c;
-      border-radius: 10px;
-      padding: 13px;
-    }
-
-    .mini-pitch {
-      aspect-ratio: 0.8;
-      background: #28572f;
-      border: 1px solid #709b6d;
-      border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .mini-dot {
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      background: #e8f6e4;
-      border: 1px solid #9ad78f;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .formation-score {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--green);
-    }
-
-    .player-editor {
-      display: grid;
-      gap: 16px;
-    }
-
-    .attribute-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .attribute-row {
-      display: grid;
-      gap: 5px;
-    }
-
-    .attribute-heading {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 12px;
-    }
-
-    .attribute-row input[type="range"] {
-      width: 100%;
-      accent-color: var(--green);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 32px 15px;
-      color: var(--muted);
-    }
-
-    .notice {
-      padding: 12px 14px;
-      border: 1px solid #5c4c2b;
-      background: #30291b;
-      color: #f0d9a0;
-      border-radius: 9px;
-      font-size: 12px;
-      margin-bottom: 15px;
-    }
-
-    .danger-notice {
-      border-color: #653939;
-      background: #301d1d;
-      color: #ffc1c1;
-    }
-
-    .success-notice {
-      border-color: #345a36;
-      background: #1d2c1e;
-      color: #b1edaa;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      background: #000a;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal {
-      width: min(760px, 100%);
-      max-height: 90vh;
-      overflow-y: auto;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .modal-header h2 {
-      font-size: 20px;
-      margin: 0;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 9px;
-      flex-wrap: wrap;
-      margin-top: 22px;
-    }
-
-    .footer-note {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 24px;
-      line-height: 1.6;
-    }
-
-    .mobile-menu {
-      display: none;
-    }
-
-    @media (max-width: 1050px) {
-      .grid-3 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .main {
-        padding: 22px;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .app {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        padding: 15px;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-        gap: 14px;
-      }
-
-      .brand {
-        padding: 0 4px;
-      }
-
-      .nav-label {
-        display: none;
-      }
-
-      .nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .nav button {
-        padding: 9px;
-        font-size: 12px;
-      }
-
-      .sidebar-bottom {
-        display: none;
-      }
-
-      .main {
-        padding: 17px;
-      }
-
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .page-title {
-        font-size: 23px;
-      }
-
-      .grid-2,
-      .grid-3,
-      .form-grid,
-      .attribute-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .formation-card {
-        grid-template-columns: 80px minmax(0, 1fr);
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080909">
+<title>FootLab — Football Manager</title>
+<style>
+:root {
+  --bg:#080909; --panel:#111313; --panel2:#181b19;
+  --yellow:#eaff00; --text:#f5f5ef; --muted:#92968e;
+  --border:#292d27; --green:#91ff83; --red:#ff7777;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+a{color:var(--yellow)}
+header{height:72px;padding:0 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:#080909ee;backdrop-filter:blur(14px);z-index:10}
+.logo{font-size:24px;font-weight:1000;letter-spacing:-1.5px}
+.logo span{color:var(--yellow)}
+.header-right{display:flex;gap:10px;align-items:center}
+.pill{border:1px solid var(--border);padding:8px 12px;border-radius:30px;color:var(--muted);font-size:12px}
+main{max-width:1250px;margin:auto;padding:30px 22px 70px}
+.page{display:none}.page.active{display:block}
+.hero{min-height:420px;border:1px solid #303526;border-radius:24px;overflow:hidden;position:relative;padding:clamp(30px,7vw,85px);display:flex;align-items:center;background:radial-gradient(ellipse at 80% 45%,#3b4218 0,transparent 42%),linear-gradient(125deg,#141713,#080909 70%)}
+.hero:after{content:"";position:absolute;width:310px;height:310px;border:1px solid #eaff0033;border-radius:50%;right:8%;top:55px;box-shadow:0 0 0 28px #eaff0008,0 0 0 60px #eaff0005}
+.hero-content{position:relative;z-index:1;max-width:650px}
+.eyebrow{color:var(--yellow);font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:clamp(44px,7vw,83px);line-height:.98;letter-spacing:-4px;margin:20px 0}
+h1 span{color:var(--yellow)}
+.hero p{max-width:450px;color:#b7bcb1;line-height:1.7}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{border:1px solid var(--border);border-radius:10px;padding:12px 17px;background:var(--panel2);color:var(--text);font-weight:800;transition:.15s}
+.btn:hover{transform:translateY(-1px);border-color:var(--yellow)}
+.btn.primary{background:var(--yellow);color:#080909;border-color:var(--yellow)}
+.btn.danger{color:var(--red)}
+.btn.small{padding:8px 11px;font-size:12px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:35px 0 18px}
+h2{font-size:27px;letter-spacing:-.8px;margin:0 0 7px}
+h3{margin:0 0 15px;font-size:16px}
+.sub{color:var(--muted);font-size:13px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;min-width:0}
+.stat{font-size:35px;font-weight:900;letter-spacing:-1.5px;margin:10px 0}
+.stat-label{color:var(--muted);font-size:12px}
+.yellow{color:var(--yellow)}
+.muted{color:var(--muted)}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
+input,select,textarea{background:#0b0d0c;color:var(--text);border:1px solid var(--border);border-radius:9px;padding:11px;width:100%;min-width:0}
+input::placeholder,textarea::placeholder{color:#73786f}
+label{display:block;font-size:12px;color:#b9bdb4;margin-bottom:7px}
+.field{margin-bottom:13px;min-width:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.form-grid .field{margin:0}
+.form-grid .full{grid-column:1/-1}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:13px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+td strong{font-size:13px}
+.rating{font-weight:900;color:var(--yellow)}
+.tag{display:inline-block;border:1px solid var(--border);border-radius:20px;padding:5px 8px;font-size:11px;color:var(--muted)}
+.tag.good{color:var(--green);border-color:#294d28}
+.tag.bad{color:var(--red);border-color:#542c2c}
+.progress{height:6px;border-radius:10px;background:#282c25;overflow:hidden;margin-top:8px}
+.progress div{height:100%;background:var(--yellow)}
+.navbar{display:flex;gap:7px;flex-wrap:wrap;margin:25px 0}
+.navbar button{background:transparent;color:var(--muted);border:1px solid transparent;border-radius:9px;padding:10px 12px;font-size:13px}
+.navbar button.active,.navbar button:hover{color:var(--yellow);border-color:#454a30;background:#16190f}
+.player-card{display:flex;align-items:center;gap:13px}
+.avatar{width:46px;height:46px;display:grid;place-items:center;border-radius:12px;background:#262a18;color:var(--yellow);font-weight:900;font-size:19px;flex-shrink:0}
+.player-card .info{flex:1;min-width:0}
+.player-card .info strong{display:block;overflow:hidden;text-overflow:ellipsis}
+.player-card .info small{display:block;color:var(--muted);margin-top:5px}
+.player-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.player-item{border:1px solid var(--border);background:var(--panel);padding:15px;border-radius:13px}
+.player-item-top{display:flex;align-items:center;gap:12px}
+.player-item-top .info{flex:1;min-width:0}
+.player-item-top strong{display:block;overflow:hidden;text-overflow:ellipsis}
+.player-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.empty{padding:32px 15px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:12px;line-height:1.7}
+.pitch{background:linear-gradient(180deg,#173c26,#102d1e);border:2px solid #537b50;border-radius:14px;padding:16px;position:relative;min-height:390px;overflow:hidden}
+.pitch:before{content:"";position:absolute;inset:50% 0 0;border-top:1px solid #ffffff45}
+.pitch:after{content:"";position:absolute;left:50%;top:50%;width:90px;height:90px;transform:translate(-50%,-50%);border:1px solid #ffffff45;border-radius:50%}
+.lineup{position:relative;z-index:1;min-height:350px;display:flex;flex-direction:column;justify-content:space-around;gap:20px}
+.line{display:flex;justify-content:space-evenly;gap:8px;flex-wrap:wrap}
+.slot{width:92px;min-height:58px;background:#0b140edb;border:1px solid #ffffff48;border-radius:9px;padding:8px 4px;text-align:center;color:#fff;font-size:11px}
+.slot select{font-size:10px;padding:5px;margin-top:5px;background:#101910}
+.slot strong{display:block;font-size:12px}
+.score{font-size:25px;font-weight:900;color:var(--yellow)}
+footer{border-top:1px solid var(--border);padding:25px;text-align:center;color:var(--muted);font-size:12px}
+.notice{padding:12px;border-radius:10px;border:1px solid #44482d;background:#191b12;color:#c7caac;font-size:12px;line-height:1.6}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--border);margin:20px 0}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero:after{right:-140px}.player-list{grid-template-columns:1fr}}
+@media(max-width:520px){header{padding:0 16px;height:62px}.logo{font-size:21px}.pill{display:none}main{padding:20px 14px 50px}.hero{min-height:390px;padding:28px 22px}h1{letter-spacing:-2px}.grid,.grid.two,.form-grid{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}.navbar{gap:3px}.navbar button{padding:9px 8px;font-size:12px}.card{padding:15px}.slot{width:78px}.pitch{padding:9px}}
+</style>
 </head>
-
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-name">FootLab <span>TACTIQUE</span></div>
-        <div class="brand-subtitle">Analyse et stratégie football</div>
-      </div>
-
-      <div>
-        <div class="nav-label">Espace équipe</div>
-        <nav class="nav">
-          <button class="active" data-page="dashboard">Vue générale</button>
-          <button data-page="team">Mon équipe</button>
-          <button data-page="players">Effectif</button>
-          <button data-page="compositions">Compositions</button>
-          <button data-page="tactics">Tactique</button>
-          <button data-page="tests">Tests physiques</button>
-        </nav>
-      </div>
-
-      <div>
-        <div class="nav-label">Analyse</div>
-        <nav class="nav">
-          <button data-page="scout">Scout IA</button>
-          <button data-page="explorer">Explorer</button>
-          <button data-page="account">Compte</button>
-        </nav>
-      </div>
-
-      <div class="sidebar-bottom">
-        FootLab TACTIQUE<br>
-        Outil d'aide à l'analyse sportive.
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <h1 class="page-title" id="pageTitle">Vue générale</h1>
-          <p class="page-description" id="pageDescription">
-            Retrouve les informations principales de ton équipe et prépare tes compositions.
-          </p>
-        </div>
-        <div class="topbar-actions">
-          <button class="btn" id="exportDataBtn">Exporter les données</button>
-          <button class="btn btn-primary" id="addPlayerBtn">Ajouter un joueur</button>
-        </div>
-      </header>
-
-      <section class="section active" id="page-dashboard">
-        <div class="grid grid-3">
-          <div class="card">
-            <div class="stat-label">Joueurs enregistrés</div>
-            <div class="stat-value" id="statPlayers">0</div>
-            <div class="muted small">Effectif total</div>
-          </div>
-          <div class="card">
-            <div class="stat-label">Joueurs disponibles</div>
-            <div class="stat-value" id="statAvailable">0</div>
-            <div class="muted small">Sélectionnables actuellement</div>
-          </div>
-          <div class="card">
-            <div class="stat-label">Composition principale</div>
-            <div class="stat-value" id="statFormation">4-3-3</div>
-            <div class="muted small">Formation sélectionnée</div>
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="margin-top:18px">
-          <div class="card">
-            <h2 class="card-title">Mon équipe</h2>
-            <p class="card-description">Informations principales du club et du groupe.</p>
-            <div id="dashboardTeamInfo"></div>
-            <button class="btn btn-primary" style="margin-top:16px" data-goto="team">
-              Gérer mon équipe
-            </button>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">État de l'effectif</h2>
-            <p class="card-description">Disponibilités et alertes de sélection.</p>
-            <div id="dashboardAvailability"></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-          <div class="toolbar">
-            <div>
-              <h2 class="card-title">Top 5 des compositions</h2>
-              <p class="card-description">Les systèmes les plus adaptés aux joueurs disponibles.</p>
-            </div>
-            <button class="btn" data-goto="compositions">Voir le classement</button>
-          </div>
-          <div id="dashboardTopFive"></div>
-        </div>
-      </section>
-
-      <section class="section" id="page-team">
-        <div class="card">
-          <h2 class="card-title">Informations de l'équipe</h2>
-          <p class="card-description">Personnalise les informations de ton groupe.</p>
-          <form id="teamForm">
-            <div class="form-grid">
-              <div class="field">
-                <label for="teamName">Nom de l'équipe</label>
-                <input id="teamName" name="teamName" placeholder="Ex. : FC Exemple" required>
-              </div>
-              <div class="field">
-                <label for="teamClub">Club</label>
-                <input id="teamClub" name="teamClub" placeholder="Nom du club">
-              </div>
-              <div class="field">
-                <label for="teamRegion">Région</label>
-                <input id="teamRegion" name="teamRegion" placeholder="Ex. : Île-de-France">
-              </div>
-              <div class="field">
-                <label for="teamCategory">Catégorie</label>
-                <select id="teamCategory" name="teamCategory">
-                  <option>U13</option>
-                  <option>U14</option>
-                  <option>U15</option>
-                  <option selected>U16</option>
-                  <option>U17</option>
-                  <option>U18</option>
-                  <option>Seniors</option>
-                  <option>Autre</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="teamDivision">Division</label>
-                <input id="teamDivision" name="teamDivision" placeholder="Ex. : D3">
-              </div>
-              <div class="field">
-                <label for="teamCoach">Entraîneur</label>
-                <input id="teamCoach" name="teamCoach" placeholder="Nom facultatif">
-              </div>
-              <div class="field">
-                <label for="squadSize">Nombre de joueurs à sélectionner</label>
-                <select id="squadSize" name="squadSize">
-                  <option value="11">11 joueurs</option>
-                  <option value="14" selected>14 joueurs</option>
-                  <option value="16">16 joueurs</option>
-                  <option value="18">18 joueurs</option>
-                  <option value="20">20 joueurs</option>
-                  <option value="22">22 joueurs</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="selectionMode">Critère de sélection</label>
-                <select id="selectionMode" name="selectionMode">
-                  <option value="balanced">Équipe équilibrée</option>
-                  <option value="best">Meilleurs joueurs</option>
-                  <option value="complementary">Profils complémentaires</option>
-                  <option value="formation">Adaptée à la formation</option>
-                </select>
-              </div>
-              <div class="field full">
-                <label for="teamNotes">Notes sur l'équipe</label>
-                <textarea id="teamNotes" name="teamNotes" placeholder="Style de jeu, objectifs, points à améliorer..."></textarea>
-              </div>
-            </div>
-            <div style="margin-top:18px">
-              <button class="btn btn-primary" type="submit">Enregistrer l'équipe</button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <section class="section" id="page-players">
-        <div class="card">
-          <div class="toolbar">
-            <div>
-              <h2 class="card-title">Effectif</h2>
-              <p class="card-description">Gère les joueurs, les postes, les notes et les disponibilités.</p>
-            </div>
-            <button class="btn btn-primary" id="addPlayerBtn2">Ajouter un joueur</button>
-          </div>
-
-          <div class="toolbar">
-            <input id="playerSearch" placeholder="Rechercher un joueur..." aria-label="Rechercher un joueur">
-            <select id="playerStatusFilter" aria-label="Filtrer par disponibilité">
-              <option value="all">Tous les statuts</option>
-              <option value="available">Disponibles</option>
-              <option value="injured">Blessés</option>
-              <option value="unavailable">Indisponibles</option>
-              <option value="doubtful">Incertain</option>
-            </select>
-            <select id="playerPositionFilter" aria-label="Filtrer par poste">
-              <option value="all">Tous les postes</option>
-              <option value="Gardien">Gardiens</option>
-              <option value="Défenseur central">Défenseurs centraux</option>
-              <option value="Latéral droit">Latéraux droits</option>
-              <option value="Latéral gauche">Latéraux gauches</option>
-              <option value="Milieu défensif">Milieux défensifs</option>
-              <option value="Milieu central">Milieux centraux</option>
-              <option value="Milieu offensif">Milieux offensifs</option>
-              <option value="Ailier droit">Ailiers droits</option>
-              <option value="Ailier gauche">Ailiers gauches</option>
-              <option value="Avant-centre">Avant-centres</option>
-            </select>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Joueur</th>
-                  <th>Poste</th>
-                  <th>Âge</th>
-                  <th>Note /100</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="playersTableBody"></tbody>
-            </table>
-          </div>
-          <div class="empty-state" id="playersEmpty" hidden>
-            Aucun joueur ne correspond à cette recherche.
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="page-compositions">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2 class="card-title">Générateur de compositions</h2>
-            <p class="card-description">Compare jusqu'à cinq systèmes tactiques à partir des joueurs disponibles.</p>
-            <div class="form-grid">
-              <div class="field">
-                <label for="formationSelect">Formation principale</label>
-                <select id="formationSelect">
-                  <option>4-3-3</option>
-                  <option>4-2-3-1</option>
-                  <option>4-4-2</option>
-                  <option>3-5-2</option>
-                  <option>3-4-3</option>
-                  <option>4-1-4-1</option>
-                  <option>4-5-1</option>
-                  <option>5-3-2</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="compositionCount">Joueurs dans le groupe</label>
-                <select id="compositionCount">
-                  <option value="11">11</option>
-                  <option value="14" selected>14</option>
-                  <option value="16">16</option>
-                  <option value="18">18</option>
-                  <option value="20">20</option>
-                  <option value="22">22</option>
-                </select>
-              </div>
-            </div>
-            <div class="field" style="margin-top:14px">
-              <label for="compositionMode">Mode de sélection</label>
-              <select id="compositionMode">
-                <option value="balanced">Équipe équilibrée</option>
-                <option value="best">Meilleurs joueurs</option>
-                <option value="complementary">Profils complémentaires</option>
-                <option value="formation">Adaptée à la formation</option>
-              </select>
-            </div>
-            <button class="btn btn-primary" id="generateCompositions" style="margin-top:18px">
-              Calculer le Top 5
-            </button>
-            <p class="footer-note">
-              Les notes et classements sont des estimations basées sur les informations enregistrées.
-              Ils ne remplacent pas l'évaluation de l'entraîneur.
-            </p>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">Terrain tactique</h2>
-            <p class="card-description">Visualisation de la composition sélectionnée.</p>
-            <div id="mainPitch" class="pitch">
-              <div class="pitch-lines">
-                <div class="pitch-half"></div>
-                <div class="pitch-circle"></div>
-                <div class="pitch-box top"></div>
-                <div class="pitch-box bottom"></div>
-              </div>
-              <div id="pitchPlayers"></div>
-            </div>
-            <div class="toolbar" style="margin-top:14px">
-              <span class="muted small" id="pitchFormationLabel">Formation : 4-3-3</span>
-              <button class="btn" id="exportPitch">Exporter en PNG</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-          <h2 class="card-title">Top 5 des compositions</h2>
-          <p class="card-description">Chaque proposition affiche son score estimé, sa structure et ses avantages.</p>
-          <div id="topFiveResults"></div>
-        </div>
-
-        <div class="grid grid-2" style="margin-top:18px">
-          <div class="card">
-            <h2 class="card-title">Onze titulaire</h2>
-            <div id="startingEleven"></div>
-          </div>
-          <div class="card">
-            <h2 class="card-title">Remplaçants sélectionnés</h2>
-            <div id="selectedBench"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="page-tactics">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2 class="card-title">Consignes tactiques</h2>
-            <p class="card-description">Définis les principes de jeu de ton équipe.</p>
-            <form id="tacticsForm">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="tacticalPressing">Pressing</label>
-                  <select id="tacticalPressing">
-                    <option value="low">Bas</option>
-                    <option value="medium" selected>Médian</option>
-                    <option value="high">Haut</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="tacticalWidth">Largeur</label>
-                  <select id="tacticalWidth">
-                    <option value="narrow">Étroite</option>
-                    <option value="balanced" selected>Équilibrée</option>
-                    <option value="wide">Large</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="tacticalTempo">Tempo</label>
-                  <select id="tacticalTempo">
-                    <option value="slow">Lent</option>
-                    <option value="medium" selected>Équilibré</option>
-                    <option value="fast">Rapide</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="tacticalDepth">Hauteur de bloc</label>
-                  <select id="tacticalDepth">
-                    <option value="low">Bas</option>
-                    <option value="medium" selected>Médian</option>
-                    <option value="high">Haut</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="tacticalTransition">Transitions</label>
-                  <select id="tacticalTransition">
-                    <option value="counter">Contre-attaque</option>
-                    <option value="balanced" selected>Équilibrées</option>
-                    <option value="possession">Conservation</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="tacticalDefence">Défense</label>
-                  <select id="tacticalDefence">
-                    <option value="compact" selected>Bloc compact</option>
-                    <option value="individual">Marquage individuel</option>
-                    <option value="press">Pressing agressif</option>
-                  </select>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="margin-top:18px" type="submit">
-                Enregistrer les consignes
-              </button>
-            </form>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">Recommandations tactiques</h2>
-            <p class="card-description">Conseils générés selon tes réglages et ton effectif.</p>
-            <div id="tacticalAdvice"></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-          <h2 class="card-title">Les trois phases de jeu</h2>
-          <div class="grid grid-3" style="margin-top:15px">
-            <div>
-              <h3 class="card-title">Contre-attaque</h3>
-              <p class="muted small" id="counterAdvice"></p>
-            </div>
-            <div>
-              <h3 class="card-title">Phase défensive</h3>
-              <p class="muted small" id="defenceAdvice"></p>
-            </div>
-            <div>
-              <h3 class="card-title">Attaque placée</h3>
-              <p class="muted small" id="attackAdvice"></p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="page-tests">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2 class="card-title">Enregistrer un test physique</h2>
-            <p class="card-description">Conserve les mesures et compare les progrès dans le temps.</p>
-            <form id="testForm">
-              <div class="form-grid">
-                <div class="field full">
-                  <label for="testPlayer">Joueur</label>
-                  <select id="testPlayer" required></select>
-                </div>
-                <div class="field">
-                  <label for="testType">Type de test</label>
-                  <select id="testType">
-                    <option value="sprint10">Sprint 10 mètres</option>
-                    <option value="sprint30">Sprint 30 mètres</option>
-                    <option value="endurance">Test d'endurance</option>
-                    <option value="jump">Saut vertical ou horizontal</option>
-                    <option value="agility">Agilité avec changements de direction</option>
-                    <option value="recovery">Suivi de récupération</option>
-                    <option value="manual">Note manuelle sur 100</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="testDate">Date du test</label>
-                  <input id="testDate" type="date" required>
-                </div>
-                <div class="field">
-                  <label for="testValue">Résultat</label>
-                  <input id="testValue" type="number" step="any" required placeholder="Ex. : 1.85">
-                </div>
-                <div class="field">
-                  <label for="testUnit">Unité</label>
-                  <select id="testUnit">
-                    <option value="s">Secondes</option>
-                    <option value="m">Mètres</option>
-                    <option value="cm">Centimètres</option>
-                    <option value="palier">Palier</option>
-                    <option value="km/h">km/h</option>
-                    <option value="/100">Note sur 100</option>
-                    <option value="texte">Autre</option>
-                  </select>
-                </div>
-                <div class="field full">
-                  <label for="testNotes">Notes</label>
-                  <textarea id="testNotes" placeholder="Conditions, protocole, remarques..."></textarea>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="margin-top:18px" type="submit">
-                Enregistrer le test
-              </button>
-            </form>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">Historique des tests</h2>
-            <p class="card-description">Les résultats enregistrés sont conservés dans ce navigateur.</p>
-            <div id="testHistory"></div>
-          </div>
-        </div>
-        <div class="card" style="margin-top:18px">
-          <h2 class="card-title">Évaluation manuelle sur 100</h2>
-          <p class="card-description">
-            Cette option reste disponible en complément des tests physiques.
-            Elle peut servir à noter une qualité spécifique, mais ne doit pas remplacer les mesures réelles.
-          </p>
-          <div id="manualRatings"></div>
-        </div>
-      </section>
-
-      <section class="section" id="page-scout">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2 class="card-title">Scout IA</h2>
-            <p class="card-description">Prépare une analyse de l'équipe adverse.</p>
-            <div class="field">
-              <label for="opponentName">Nom exact de l'équipe adverse</label>
-              <input id="opponentName" placeholder="Ex. : Bois d'Arcy U16">
-            </div>
-            <div class="field" style="margin-top:14px">
-              <label for="opponentCategory">Catégorie adverse</label>
-              <select id="opponentCategory">
-                <option>U13</option>
-                <option>U14</option>
-                <option>U15</option>
-                <option selected>U16</option>
-                <option>U17</option>
-                <option>U18</option>
-                <option>Seniors</option>
-                <option>Autre</option>
-              </select>
-            </div>
-            <div class="field" style="margin-top:14px">
-              <label for="opponentSource">Source des données</label>
-              <select id="opponentSource">
-                <option value="manual">Saisie manuelle</option>
-                <option value="scorenco">Score'n'Co — consulter le site</option>
-              </select>
-            </div>
-            <div class="notice" style="margin-top:15px">
-              Les statistiques doivent correspondre à l'équipe et à la catégorie sélectionnées.
-              Les données Score'n'Co ne seront pas inventées si elles ne sont pas accessibles automatiquement.
-            </div>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">Statistiques adverses</h2>
-            <form id="opponentForm">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="opponentPlayed">Matchs joués</label>
-                  <input id="opponentPlayed" type="number" min="0" value="0">
-                </div>
-                <div class="field">
-                  <label for="opponentPoints">Points</label>
-                  <input id="opponentPoints" type="number" min="0" value="0">
-                </div>
-                <div class="field">
-                  <label for="opponentGoalsFor">Buts marqués</label>
-                  <input id="opponentGoalsFor" type="number" min="0" value="0">
-                </div>
-                <div class="field">
-                  <label for="opponentGoalsAgainst">Buts encaissés</label>
-                  <input id="opponentGoalsAgainst" type="number" min="0" value="0">
-                </div>
-                <div class="field">
-                  <label for="opponentRank">Classement</label>
-                  <input id="opponentRank" type="number" min="1" placeholder="Ex. : 4">
-                </div>
-                <div class="field">
-                  <label for="opponentTotalTeams">Nombre d'équipes</label>
-                  <input id="opponentTotalTeams" type="number" min="1" placeholder="Ex. : 10">
-                </div>
-                <div class="field full">
-                  <label for="opponentNotes">Observations sur l'adversaire</label>
-                  <textarea id="opponentNotes" placeholder="Style de jeu, forces, faiblesses, joueurs importants..."></textarea>
-                </div>
-              </div>
-              <div class="actions" style="margin-top:16px">
-                <button class="btn btn-primary" type="submit">Analyser l'adversaire</button>
-                <button class="btn" type="button" id="openScoreNCo">Ouvrir Score'n'Co</button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="card" style="margin-top:18px">
-          <h2 class="card-title">Rapport de scouting</h2>
-          <div id="scoutReport"></div>
-        </div>
-      </section>
-
-      <section class="section" id="page-explorer">
-        <div class="card">
-          <h2 class="card-title">Explorer</h2>
-          <p class="card-description">
-            Cette page pourra présenter les équipes et profils partagés publiquement lorsque le service de comptes sera configuré.
-          </p>
-          <div class="notice">
-            En mode local, les données restent dans ce navigateur. Aucun joueur d'un autre utilisateur ne sera affiché sans une source de données réellement connectée.
-          </div>
-          <div id="explorerContent"></div>
-        </div>
-      </section>
-
-      <section class="section" id="page-account">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2 class="card-title">Compte FootLab</h2>
-            <p class="card-description">Préparation de l'espace utilisateur.</p>
-            <div class="notice">
-              La connexion sécurisée et la synchronisation entre appareils nécessitent un service d'authentification configuré.
-              Cette version ne prétend pas créer un vrai compte en ligne.
-            </div>
-            <div class="field">
-              <label for="accountEmail">Adresse e-mail</label>
-              <input id="accountEmail" type="email" placeholder="nom@exemple.fr" autocomplete="email">
-            </div>
-            <div class="field" style="margin-top:14px">
-              <label for="accountVisibility">Visibilité des données</label>
-              <select id="accountVisibility">
-                <option value="private">Privées</option>
-                <option value="public">Publiques après connexion à un service compatible</option>
-              </select>
-            </div>
-            <p class="footer-note">
-              Ne saisis pas de mot de passe dans cette version locale. La gestion sécurisée des comptes sera ajoutée avec un service d'authentification.
-            </p>
-          </div>
-
-          <div class="card">
-            <h2 class="card-title">Sauvegarde locale</h2>
-            <p class="card-description">Sauvegarde ou restaure ton effectif depuis un fichier JSON.</p>
-            <div class="actions">
-              <button class="btn btn-primary" id="exportDataBtn2">Exporter mes données</button>
-              <button class="btn" id="importDataBtn">Importer un fichier</button>
-              <input type="file" id="importFile" accept=".json,application/json" hidden>
-            </div>
-            <div id="accountMessage" style="margin-top:16px"></div>
-          </div>
-        </div>
-      </section>
-
-      <p class="footer-note">
-        FootLab TACTIQUE — Les recommandations sont indicatives et dépendent de la qualité des données saisies.
-        Les tests physiques doivent être encadrés de manière adaptée à l'âge et au niveau des joueurs.
-      </p>
-    </main>
+<header>
+  <div class="logo">FOOT<span>LAB</span></div>
+  <div class="header-right">
+    <span class="pill">FOOTBALL MANAGEMENT</span>
+    <button class="btn small" onclick="go('account')">Mon compte</button>
   </div>
+</header>
 
-  <div class="modal-backdrop" id="playerModal" role="dialog" aria-modal="true" aria-labelledby="playerModalTitle">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 id="playerModalTitle">Ajouter un joueur</h2>
-        <button class="btn" type="button" id="closePlayerModal">Fermer</button>
+<main>
+  <section id="home" class="page active">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">Analyse · Performance · Football</div>
+        <h1>BIENVENUE<br>SUR <span>FOOTLAB</span></h1>
+        <p>Ton équipe. Tes statistiques. Tes choix. Centralise ton effectif et prépare tes matchs au même endroit.</p>
+        <div class="actions">
+          <button class="btn primary" onclick="go('explore')">Explorer ↗</button>
+          <button class="btn" onclick="go('team')">Mon équipe →</button>
+        </div>
       </div>
+    </div>
+    <div class="section-head">
+      <div><h2>Ton espace football</h2><div class="sub">Tout ce qu'il te faut pour suivre ton équipe.</div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="eyebrow">01 / EFFECTIF</div><div class="stat" id="homePlayers">0</div><div class="stat-label">Joueurs enregistrés</div></div>
+      <div class="card"><div class="eyebrow">02 / PERFORMANCE</div><div class="stat" id="homeRating">—</div><div class="stat-label">Note moyenne de l'effectif</div></div>
+      <div class="card"><div class="eyebrow">03 / PRÉPARATION</div><div class="stat" id="homeTests">0</div><div class="stat-label">Tests physiques enregistrés</div></div>
+    </div>
+    <div class="section-head"><div><h2>Accès rapide</h2><div class="sub">Passe directement à l'action.</div></div></div>
+    <div class="grid">
+      <div class="card"><h3>Mon équipe</h3><p class="sub">Gère les informations du club et ton effectif.</p><button class="btn" onclick="go('team')">Ouvrir →</button></div>
+      <div class="card"><h3>Compositions</h3><p class="sub">Choisis un système et prépare ton onze.</p><button class="btn" onclick="go('lineup')">Composer →</button></div>
+      <div class="card"><h3>Tests physiques</h3><p class="sub">Enregistre et compare les performances.</p><button class="btn" onclick="go('tests')">Consulter →</button></div>
+    </div>
+  </section>
 
-      <form id="playerForm">
-        <input type="hidden" id="playerId">
-        <div class="player-editor">
-          <div class="form-grid">
-            <div class="field">
-              <label for="playerName">Nom du joueur</label>
-              <input id="playerName" required placeholder="Nom et prénom">
-            </div>
-            <div class="field">
-              <label for="playerAge">Âge</label>
-              <input id="playerAge" type="number" min="5" max="60" value="15">
-            </div>
-            <div class="field">
-              <label for="playerPosition">Poste principal</label>
-              <select id="playerPosition">
-                <option>Gardien</option>
-                <option>Défenseur central</option>
-                <option>Latéral droit</option>
-                <option>Latéral gauche</option>
-                <option>Milieu défensif</option>
-                <option>Milieu central</option>
-                <option>Milieu offensif</option>
-                <option>Ailier droit</option>
-                <option>Ailier gauche</option>
-                <option>Avant-centre</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="playerSecondary">Poste secondaire</label>
-              <select id="playerSecondary">
-                <option value="">Aucun</option>
-                <option>Gardien</option>
-                <option>Défenseur central</option>
-                <option>Latéral droit</option>
-                <option>Latéral gauche</option>
-                <option>Milieu défensif</option>
-                <option>Milieu central</option>
-                <option>Milieu offensif</option>
-                <option>Ailier droit</option>
-                <option>Ailier gauche</option>
-                <option>Avant-centre</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="playerStatus">Disponibilité</label>
-              <select id="playerStatus">
-                <option value="available">Disponible</option>
-                <option value="injured">Blessé</option>
-                <option value="unavailable">Indisponible</option>
-                <option value="doubtful">Incertain</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="playerReturnDate">Date prévisionnelle de retour</label>
-              <input id="playerReturnDate" type="date">
-            </div>
-            <div class="field">
-              <label for="playerJersey">Numéro de maillot</label>
-              <input id="playerJersey" type="number" min="1" max="99" placeholder="Facultatif">
-            </div>
-            <div class="field">
-              <label for="playerManualRating">Note manuelle sur 100</label>
-              <input id="playerManualRating" type="number" min="0" max="100" value="50">
-            </div>
-          </div>
+  <section id="explore" class="page">
+    <div class="section-head"><div><div class="eyebrow">CENTRE DE CONTRÔLE</div><h2>Explorer FootLab</h2><div class="sub">Les outils de ton staff réunis en un seul endroit.</div></div></div>
+    <div class="grid">
+      <div class="card"><h3>Effectif</h3><p class="sub">Crée des fiches joueurs et attribue des notes.</p><button class="btn primary" onclick="go('players')">Voir les joueurs</button></div>
+      <div class="card"><h3>Compositions</h3><p class="sub">Formation, onze de départ et banc.</p><button class="btn" onclick="go('lineup')">Préparer le match</button></div>
+      <div class="card"><h3>Tactique</h3><p class="sub">Choisis une approche adaptée à ton idée de jeu.</p><button class="btn" onclick="go('tactics')">Ouvrir la tactique</button></div>
+      <div class="card"><h3>Tests physiques</h3><p class="sub">Chronos, distances et historique individuel.</p><button class="btn" onclick="go('tests')">Suivre les tests</button></div>
+      <div class="card"><h3>Scout IA</h3><p class="sub">Prépare une fiche d'observation manuelle d'un adversaire.</p><button class="btn" onclick="go('scout')">Créer un rapport</button></div>
+      <div class="card"><h3>Score’n’Co</h3><p class="sub">Configure le lien ou le widget de ton équipe.</p><button class="btn" onclick="go('scorenco')">Connecter</button></div>
+    </div>
+  </section>
 
-          <div>
-            <h3 class="card-title">Caractéristiques du joueur</h3>
-            <p class="card-description">Notes de 0 à 100 pour affiner les recommandations.</p>
-            <div class="attribute-grid" id="playerAttributes"></div>
-          </div>
-
-          <div class="field">
-            <label for="playerNotes">Notes personnelles</label>
-            <textarea id="playerNotes" placeholder="Points forts, axes de progression, observations..."></textarea>
-          </div>
+  <section id="team" class="page">
+    <div class="section-head"><div><div class="eyebrow">TON CLUB</div><h2>Mon équipe</h2><div class="sub">Renseigne les informations de ton équipe.</div></div></div>
+    <div class="card">
+      <form id="teamForm">
+        <div class="form-grid">
+          <div class="field"><label for="clubName">Nom de l'équipe</label><input id="clubName" placeholder="Ex. FC FootLab" required></div>
+          <div class="field"><label for="clubCategory">Catégorie</label><input id="clubCategory" placeholder="Ex. U17"></div>
+          <div class="field"><label for="clubLeague">Championnat / division</label><input id="clubLeague" placeholder="Ex. Régional 2"></div>
+          <div class="field"><label for="clubSeason">Saison</label><input id="clubSeason" placeholder="Ex. 2026-2027"></div>
+          <div class="field full"><label for="clubNotes">Notes sur l'équipe</label><textarea id="clubNotes" rows="3" placeholder="Objectifs, consignes, informations utiles…"></textarea></div>
         </div>
-
-        <div class="modal-footer">
-          <button class="btn" type="button" id="cancelPlayer">Annuler</button>
-          <button class="btn btn-primary" type="submit">Enregistrer le joueur</button>
-        </div>
+        <div class="actions"><button class="btn primary" type="submit">Enregistrer l'équipe</button></div>
       </form>
     </div>
-  </div>
+    <div class="section-head"><div><h2>Gestion des données</h2><div class="sub">Garde une copie de sauvegarde de tes données.</div></div></div>
+    <div class="card">
+      <div class="actions">
+        <button class="btn" onclick="exportData()">Exporter mes données JSON</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">Importer une sauvegarde</button>
+        <button class="btn danger" onclick="clearData()">Réinitialiser les données locales</button>
+        <input class="hidden" id="importFile" type="file" accept=".json,application/json" onchange="importData(event)">
+      </div>
+      <p class="sub">La sauvegarde JSON est un fichier que tu peux conserver. Elle ne remplace pas une sauvegarde sur serveur.</p>
+    </div>
+  </section>
 
-  <input type="file" id="hiddenImportFile" accept=".json,application/json" hidden>
-  
+  <section id="players" class="page">
+    <div class="section-head"><div><div class="eyebrow">BASE DE DONNÉES</div><h2>Effectif</h2><div class="sub">Crée et modifie les fiches de tes joueurs.</div></div><button class="btn primary" onclick="openPlayerForm()">+ Nouveau joueur</button></div>
+    <div class="toolbar"><input id="playerSearch" placeholder="Rechercher un joueur…" oninput="renderPlayers()" style="max-width:300px"><select id="positionFilter" onchange="renderPlayers()" style="max-width:200px"><option value="">Tous les postes</option><option>Gardien</option><option>Défenseur</option><option>Milieu</option><option>Attaquant</option></select></div>
+    <div id="playerList" class="player-list"></div>
+    <div id="playerFormCard" class="card hidden" style="margin-top:20px">
+      <div class="section-head" style="margin-top:0"><div><h2 id="playerFormTitle">Nouveau joueur</h2><div class="sub">Les notes sur 100 sont des évaluations manuelles.</div></div><button class="btn small" onclick="closePlayerForm()">Fermer ✕</button></div>
+      <form id="playerForm">
+        <input type="hidden" id="playerId">
+        <div class="form-grid">
+          <div class="field"><label for="pName">Nom et prénom *</label><input id="pName" required placeholder="Nom du joueur"></div>
+          <div class="field"><label for="pNumber">Numéro</label><input id="pNumber" type="number" min="1" max="99" placeholder="10"></div>
+          <div class="field"><label for="pPosition">Poste principal</label><select id="pPosition"><option>Gardien</option><option>Défenseur</option><option>Milieu</option><option>Attaquant</option></select></div>
+          <div class="field"><label for="pStatus">Disponibilité</label><select id="pStatus"><option>Disponible</option><option>Blessé</option><option>Absent</option><option>Incertain</option></select></div>
+          <div class="field"><label for="pAge">Âge</label><input id="pAge" type="number" min="5" max="80" placeholder="16"></div>
+          <div class="field"><label for="pFoot">Pied fort</label><select id="pFoot"><option>Droit</option><option>Gauche</option><option>Ambidextre</option></select></div>
+          <div class="field"><label for="pSpeed">Vitesse / 100</label><input id="pSpeed" type="number" min="0" max="100" value="50"></div>
+          <div class="field"><label for="pEndurance">Endurance / 100</label><input id="pEndurance" type="number" min="0" max="100" value="50"></div>
+          <div class="field"><label for="pTechnique">Technique / 100</label><input id="pTechnique" type="number" min="0" max="100" value="50"></div>
+          <div class="field"><label for="pTactics">Tactique / 100</label><input id="pTactics" type="number" min="0" max="100" value="50"></div>
+          <div class="field"><label for="pPower">Puissance / 100</label><input id="pPower" type="number" min="0" max="100" value="50"></div>
+          <div class="field"><label for="pAgility">Agilité / 100</label><input id="pAgility" type="number" min="0" max="100" value="50"></div>
+          <div class="field full"><label for="pNotes">Observations</label><textarea id="pNotes" rows="3" placeholder="Qualités, axes de progression…"></textarea></div>
+        </div>
+        <div class="actions"><button class="btn primary" type="submit">Enregistrer le joueur</button><button class="btn" type="button" onclick="closePlayerForm()">Annuler</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="lineup" class="page">
+    <div class="section-head"><div><div class="eyebrow">JOUR DE MATCH</div><h2>Compositions</h2><div class="sub">Sélectionne les joueurs et organise ton système.</div></div></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Configuration du match</h3>
+        <div class="field"><label for="formation">Formation</label><select id="formation" onchange="renderLineup()"><option value="4-3-3">4-3-3</option><option value="4-2-3-1">4-2-3-1</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option><option value="3-4-3">3-4-3</option><option value="5-3-2">5-3-2</option></select></div>
+        <div class="field"><label for="matchOpponent">Adversaire</label><input id="matchOpponent" placeholder="Nom de l'adversaire" onchange="saveMatch()"></div>
+        <div class="field"><label for="matchDate">Date du match</label><input id="matchDate" type="date" onchange="saveMatch()"></div>
+        <div class="notice">Les joueurs blessés ou absents sont signalés. Vérifie toujours la disponibilité avant de valider ton onze.</div>
+        <hr><h3>Onze de départ</h3><div id="lineupRating" class="score">Note moyenne : —</div>
+      </div>
+      <div><div class="pitch"><div id="pitchLineup" class="lineup"></div></div></div>
+    </div>
+    <div class="section-head"><div><h2>Joueurs disponibles</h2><div class="sub">Le banc et les autres joueurs restent dans ton effectif.</div></div></div>
+    <div id="benchList" class="player-list"></div>
+  </section>
+
+  <section id="tactics" class="page">
+    <div class="section-head"><div><div class="eyebrow">PLAN DE JEU</div><h2>Tactique</h2><div class="sub">Définis une approche de match et conserve tes consignes.</div></div></div>
+    <div class="card">
+      <form id="tacticForm">
+        <div class="form-grid">
+          <div class="field"><label for="tStyle">Style de jeu</label><select id="tStyle"><option>Possession</option><option>Transitions rapides</option><option>Pressing haut</option><option>Bloc médian</option><option>Bloc bas et contre-attaque</option><option>Jeu direct</option></select></div>
+          <div class="field"><label for="tIntensity">Intensité</label><select id="tIntensity"><option>Modérée</option><option>Élevée</option><option>Très élevée</option><option>Faible</option></select></div>
+          <div class="field"><label for="tWidth">Largeur</label><select id="tWidth"><option>Équilibrée</option><option>Large</option><option>Axiale</option></select></div>
+          <div class="field"><label for="tBlock">Hauteur du bloc</label><select id="tBlock"><option>Médian</option><option>Haut</option><option>Bas</option></select></div>
+          <div class="field full"><label for="tInstructions">Consignes et rôles</label><textarea id="tInstructions" rows="5" placeholder="Ex. ailier gauche dans la profondeur, latéral opposé prudent, milieu en soutien…"></textarea></div>
+        </div>
+        <div class="actions"><button class="btn primary">Enregistrer les consignes</button></div>
+      </form>
+      <div id="tacticSummary" class="notice" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <section id="tests" class="page">
+    <div class="section-head"><div><div class="eyebrow">PERFORMANCE</div><h2>Tests physiques</h2><div class="sub">Suis l'évolution des performances dans le temps.</div></div></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Enregistrer un test</h3>
+        <form id="testForm">
+          <div class="field"><label for="testPlayer">Joueur</label><select id="testPlayer" required></select></div>
+          <div class="field"><label for="testType">Test</label><select id="testType"><option value="Sprint 10 m">Sprint 10 m (secondes)</option><option value="Sprint 30 m">Sprint 30 m (secondes)</option><option value="Endurance 6 min">Course de 6 min (mètres)</option><option value="Saut vertical">Saut vertical (cm)</option><option value="Agilité">Test d'agilité (secondes)</option><option value="Autre">Autre mesure</option></select></div>
+          <div class="field"><label for="testValue">Résultat mesuré</label><input id="testValue" type="number" step="0.01" required placeholder="Ex. 4.72"></div>
+          <div class="field"><label for="testDate">Date</label><input id="testDate" type="date" required></div>
+          <div class="field"><label for="testNotes">Conditions / notes</label><input id="testNotes" placeholder="Ex. terrain sec, chronométrage manuel"></div>
+          <button class="btn primary">Enregistrer le test</button>
+        </form>
+      </div>
+      <div class="card"><h3>Comment utiliser les résultats ?</h3><p class="sub">Compare un joueur à ses propres résultats précédents, en utilisant le même protocole et des conditions similaires.</p><hr><div class="notice">FootLab ne prétend pas appliquer des normes officielles selon l'âge. Les mesures enregistrées ne changent pas automatiquement les notes /100 : tu gardes le contrôle de l'évaluation.</div></div>
+    </div>
+    <div class="section-head"><div><h2>Historique des tests</h2></div></div>
+    <div id="testHistory" class="card"></div>
+  </section>
+
+  <section id="scout" class="page">
+    <div class="section-head"><div><div class="eyebrow">ANALYSE ADVERSAIRE</div><h2>Scout IA</h2><div class="sub">Prépare un rapport d'observation et identifie des pistes de match.</div></div></div>
+    <div class="grid two">
+      <div class="card">
+        <form id="scoutForm">
+          <div class="field"><label for="scoutOpponent">Adversaire</label><input id="scoutOpponent" required placeholder="Nom de l'équipe"></div>
+          <div class="field"><label for="scoutFormation">Formation observée</label><input id="scoutFormation" placeholder="Ex. 4-3-3"></div>
+          <div class="field"><label for="scoutStrength">Points forts</label><textarea id="scoutStrength" rows="3" placeholder="Ex. transitions rapides, centres…"></textarea></div>
+          <div class="field"><label for="scoutWeakness">Points faibles</label><textarea id="scoutWeakness" rows="3" placeholder="Ex. espace derrière les latéraux…"></textarea></div>
+          <div class="field"><label for="scoutNotes">Observations supplémentaires</label><textarea id="scoutNotes" rows="3"></textarea></div>
+          <button class="btn primary">Générer le rapport</button>
+        </form>
+      </div>
+      <div class="card"><h3>Rapport d'observation</h3><div id="scoutReport" class="sub">Remplis la fiche pour générer un résumé et des pistes de réflexion. Il s'agit d'une analyse basée sur tes observations, pas d'un accès automatique aux données adverses.</div><div class="actions"><button class="btn" onclick="copyScout()">Copier le rapport</button></div></div>
+    </div>
+  </section>
+
+  <section id="scorenco" class="page">
+    <div class="section-head"><div><div class="eyebrow">CONNEXION EXTERNE</div><h2>Score’n’Co</h2><div class="sub">Configure la page ou le widget officiel de ton équipe.</div></div></div>
+    <div class="card">
+      <div class="notice">Attention : afficher un widget Score’n’Co ne signifie pas que FootLab importe automatiquement les statistiques. Une synchronisation directe nécessite une interface officielle compatible et les autorisations requises.</div>
+      <form id="scoreForm" style="margin-top:20px">
+        <div class="field"><label for="scoreUrl">URL de la page de ton équipe ou du widget intégré</label><input id="scoreUrl" type="url" placeholder="https://www.scorenco.com/…"></div>
+        <div class="actions"><button class="btn primary">Enregistrer le lien</button><button class="btn" type="button" onclick="openScore()">Ouvrir Score’n’Co ↗</button></div>
+      </form>
+      <hr>
+      <h3>Aperçu du widget</h3>
+      <div id="scorePreview" class="empty">Ajoute une URL de widget fournie par Score’n’Co pour tenter de l'afficher ici. Certains sites bloquent l'intégration dans une iframe.</div>
+    </div>
+  </section>
+
+  <section id="account" class="page">
+    <div class="section-head"><div><div class="eyebrow">ESPACE PERSONNEL</div><h2>Mon compte</h2><div class="sub">Prépare la connexion à un compte permanent.</div></div></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Connexion sécurisée</h3>
+        <div class="notice">Cette version sauvegarde tes données sur cet appareil. Les comptes permanents entre plusieurs appareils nécessitent un service d'authentification et une base de données en ligne.</div>
+        <hr>
+        <div class="field"><label for="backendUrl">URL du projet Supabase</label><input id="backendUrl" type="url" placeholder="https://xxxx.supabase.co"></div>
+        <div class="field"><label for="backendKey">Clé publique / publishable</label><input id="backendKey" placeholder="Clé publique Supabase" autocomplete="off"></div>
+        <p class="sub">N'utilise jamais une clé secrète « service_role » dans ce fichier. Configure aussi les règles d'accès de la base de données avant d'y stocker des données personnelles.</p>
+        <div class="actions"><button class="btn" onclick="saveBackend()">Enregistrer la configuration</button></div>
+        <hr>
+        <div class="field"><label for="accountEmail">Adresse e-mail</label><input id="accountEmail" type="email" placeholder="toi@exemple.fr" autocomplete="email"></div>
+        <div class="field"><label for="accountPassword">Mot de passe</label><input id="accountPassword" type="password" placeholder="Mot de passe" autocomplete="current-password"></div>
+        <div class="actions"><button class="btn primary" onclick="auth('signup')">Créer un compte</button><button class="btn" onclick="auth('login')">Se connecter</button></div>
+        <div id="authStatus" class="sub" style="margin-top:12px">Aucun compte en ligne connecté.</div>
+        <div class="actions"><button class="btn small" onclick="auth('logout')">Se déconnecter</button><button class="btn small" onclick="syncCloud()">Synchroniser les données</button></div>
+      </div>
+      <div class="card">
+        <h3>Ce qui est nécessaire pour activer les comptes</h3>
+        <p class="sub">1. Créer un projet Supabase et activer l'authentification par e-mail.</p>
+        <p class="sub">2. Créer une table de profils et de données avec des règles RLS pour que chaque utilisateur n'accède qu'à ses propres données.</p>
+        <p class="sub">3. Ajouter l'URL du projet et sa clé publique ci-contre.</p>
+        <p class="sub">4. Configurer les URL de redirection de connexion pour ton site GitHub Pages.</p>
+        <hr>
+        <p class="sub">Cette page ne déclare pas un compte « permanent » tant que le backend n'a pas été configuré et testé. La sauvegarde locale fonctionne indépendamment.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>FOOT<span class="yellow">LAB</span> · Ton football, tes données, tes décisions.</footer>
+
 <script>
 "use strict";
 
-/* =========================================================
-   FOOTLAB TACTIQUE
-   Gestion locale, joueurs, compositions, tactique et tests
-   ========================================================= */
-
-const STORAGE_KEY = "footlab_tactique_v2";
-
-const DEFAULT_STATE = {
-  team: {
-    name: "",
-    club: "",
-    region: "",
-    category: "U16",
-    division: "",
-    coach: "",
-    squadSize: 14,
-    selectionMode: "balanced",
-    notes: ""
-  },
-  formation: "4-3-3",
-  tactics: {
-    pressing: "medium",
-    width: "balanced",
-    tempo: "medium",
-    depth: "medium",
-    transition: "balanced",
-    defence: "compact"
-  },
-  players: [],
-  tests: [],
-  opponent: {
-    name: "",
-    category: "U16",
-    played: 0,
-    points: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    rank: "",
-    totalTeams: "",
-    notes: ""
-  },
-  opponentAnalyzed: false
+const STORE_KEY = "footlab_v1";
+const DEFAULT_DATA = {
+  team:{name:"",category:"",league:"",season:"",notes:""},
+  players:[], tests:[], match:{formation:"4-3-3",opponent:"",date:"",slots:[]},
+  tactics:{style:"Possession",intensity:"Modérée",width:"Équilibrée",block:"Médian",instructions:""},
+  scout:null, scoreUrl:"", backend:{url:"",key:""}
 };
+let data = loadData();
+let supabaseClient = null;
+let cloudUser = null;
+let lastScoutReport = "";
 
-const ATTRIBUTE_DEFINITIONS = [
-  { key: "speed", label: "Vitesse", defaultValue: 50 },
-  { key: "physical", label: "Puissance physique", defaultValue: 50 },
-  { key: "technique", label: "Technique", defaultValue: 50 },
-  { key: "passing", label: "Passe et vision", defaultValue: 50 },
-  { key: "defense", label: "Défense", defaultValue: 50 },
-  { key: "finishing", label: "Finition", defaultValue: 50 },
-  { key: "goalkeeper", label: "Gardien", defaultValue: 20 },
-  { key: "potential", label: "Potentiel", defaultValue: 50 }
-];
-
-const POSITIONS = [
-  "Gardien",
-  "Défenseur central",
-  "Latéral droit",
-  "Latéral gauche",
-  "Milieu défensif",
-  "Milieu central",
-  "Milieu offensif",
-  "Ailier droit",
-  "Ailier gauche",
-  "Avant-centre"
-];
-
-const FORMATIONS = {
-  "4-3-3": [
-    { role: "LW", x: 20, y: 19 },
-    { role: "ST", x: 50, y: 14 },
-    { role: "RW", x: 80, y: 19 },
-    { role: "CM", x: 29, y: 40 },
-    { role: "DM", x: 50, y: 46 },
-    { role: "CM", x: 71, y: 40 },
-    { role: "LB", x: 15, y: 68 },
-    { role: "CB", x: 38, y: 72 },
-    { role: "CB", x: 62, y: 72 },
-    { role: "RB", x: 85, y: 68 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "4-2-3-1": [
-    { role: "ST", x: 50, y: 14 },
-    { role: "LW", x: 18, y: 31 },
-    { role: "AM", x: 50, y: 29 },
-    { role: "RW", x: 82, y: 31 },
-    { role: "DM", x: 38, y: 48 },
-    { role: "DM", x: 62, y: 48 },
-    { role: "LB", x: 15, y: 68 },
-    { role: "CB", x: 38, y: 72 },
-    { role: "CB", x: 62, y: 72 },
-    { role: "RB", x: 85, y: 68 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "4-4-2": [
-    { role: "ST", x: 36, y: 18 },
-    { role: "ST", x: 64, y: 18 },
-    { role: "LW", x: 16, y: 42 },
-    { role: "CM", x: 39, y: 45 },
-    { role: "CM", x: 61, y: 45 },
-    { role: "RW", x: 84, y: 42 },
-    { role: "LB", x: 15, y: 68 },
-    { role: "CB", x: 38, y: 72 },
-    { role: "CB", x: 62, y: 72 },
-    { role: "RB", x: 85, y: 68 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "3-5-2": [
-    { role: "ST", x: 36, y: 17 },
-    { role: "ST", x: 64, y: 17 },
-    { role: "LM", x: 12, y: 42 },
-    { role: "CM", x: 34, y: 43 },
-    { role: "DM", x: 50, y: 48 },
-    { role: "CM", x: 66, y: 43 },
-    { role: "RM", x: 88, y: 42 },
-    { role: "CB", x: 27, y: 70 },
-    { role: "CB", x: 50, y: 74 },
-    { role: "CB", x: 73, y: 70 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "3-4-3": [
-    { role: "LW", x: 19, y: 20 },
-    { role: "ST", x: 50, y: 14 },
-    { role: "RW", x: 81, y: 20 },
-    { role: "LM", x: 14, y: 45 },
-    { role: "CM", x: 39, y: 45 },
-    { role: "CM", x: 61, y: 45 },
-    { role: "RM", x: 86, y: 45 },
-    { role: "CB", x: 27, y: 71 },
-    { role: "CB", x: 50, y: 74 },
-    { role: "CB", x: 73, y: 71 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "4-1-4-1": [
-    { role: "ST", x: 50, y: 15 },
-    { role: "LW", x: 17, y: 34 },
-    { role: "CM", x: 39, y: 37 },
-    { role: "CM", x: 61, y: 37 },
-    { role: "RW", x: 83, y: 34 },
-    { role: "DM", x: 50, y: 51 },
-    { role: "LB", x: 15, y: 68 },
-    { role: "CB", x: 38, y: 72 },
-    { role: "CB", x: 62, y: 72 },
-    { role: "RB", x: 85, y: 68 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "4-5-1": [
-    { role: "ST", x: 50, y: 15 },
-    { role: "LW", x: 16, y: 35 },
-    { role: "CM", x: 34, y: 41 },
-    { role: "DM", x: 50, y: 45 },
-    { role: "CM", x: 66, y: 41 },
-    { role: "RW", x: 84, y: 35 },
-    { role: "LB", x: 15, y: 68 },
-    { role: "CB", x: 38, y: 72 },
-    { role: "CB", x: 62, y: 72 },
-    { role: "RB", x: 85, y: 68 },
-    { role: "GK", x: 50, y: 90 }
-  ],
-  "5-3-2": [
-    { role: "ST", x: 36, y: 18 },
-    { role: "ST", x: 64, y: 18 },
-    { role: "CM", x: 30, y: 43 },
-    { role: "DM", x: 50, y: 47 },
-    { role: "CM", x: 70, y: 43 },
-    { role: "LB", x: 10, y: 60 },
-    { role: "CB", x: 29, y: 72 },
-    { role: "CB", x: 50, y: 75 },
-    { role: "CB", x: 71, y: 72 },
-    { role: "RB", x: 90, y: 60 },
-    { role: "GK", x: 50, y: 90 }
-  ]
-};
-
-const FORMATION_INFO = {
-  "4-3-3": {
-    strength: "Largeur offensive et présence sur les ailes",
-    weakness: "Les espaces derrière les ailiers peuvent être exposés",
-    style: "Convient à une équipe capable de combiner, presser et attaquer sur les côtés."
-  },
-  "4-2-3-1": {
-    strength: "Protection de la défense et soutien entre les lignes",
-    weakness: "Le numéro 10 peut être isolé si les milieux restent trop bas",
-    style: "Convient à une équipe avec un milieu offensif créatif et deux milieux fiables."
-  },
-  "4-4-2": {
-    strength: "Organisation simple et deux solutions devant",
-    weakness: "Le milieu peut être en infériorité face à trois milieux centraux",
-    style: "Convient à une équipe compacte qui souhaite attaquer rapidement."
-  },
-  "3-5-2": {
-    strength: "Densité dans l'axe et deux attaquants",
-    weakness: "Les couloirs demandent beaucoup d'efforts aux pistons",
-    style: "Convient à une équipe disposant de trois défenseurs centraux et de pistons endurants."
-  },
-  "3-4-3": {
-    strength: "Trois joueurs offensifs et largeur importante",
-    weakness: "Les espaces latéraux peuvent être difficiles à couvrir",
-    style: "Convient à une équipe agressive dans le pressing et capable de défendre en avançant."
-  },
-  "4-1-4-1": {
-    strength: "Bloc compact et protection de l'axe",
-    weakness: "L'avant-centre peut manquer de soutien",
-    style: "Convient à une équipe qui souhaite défendre ensemble et progresser collectivement."
-  },
-  "4-5-1": {
-    strength: "Densité au milieu et couverture des espaces",
-    weakness: "L'attaquant peut se retrouver seul",
-    style: "Convient à une équipe qui veut contrôler le milieu et se projeter sur récupération."
-  },
-  "5-3-2": {
-    strength: "Protection de la surface et présence axiale",
-    weakness: "La relance peut devenir prévisible si les pistons sont bloqués",
-    style: "Convient à une équipe qui souhaite sécuriser la défense tout en conservant deux attaquants."
-  }
-};
-
-let state = loadState();
-let currentLineup = null;
-let currentPage = "dashboard";
-let currentEditingId = null;
-
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return clone(DEFAULT_STATE);
-
-    const parsed = JSON.parse(saved);
-    return {
-      ...clone(DEFAULT_STATE),
-      ...parsed,
-      team: { ...DEFAULT_STATE.team, ...(parsed.team || {}) },
-      tactics: { ...DEFAULT_STATE.tactics, ...(parsed.tactics || {}) },
-      players: Array.isArray(parsed.players) ? parsed.players : [],
-      tests: Array.isArray(parsed.tests) ? parsed.tests : [],
-      opponent: { ...DEFAULT_STATE.opponent, ...(parsed.opponent || {}) }
+function loadData(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw)return structuredClone(DEFAULT_DATA);
+    const parsed=JSON.parse(raw);
+    return {...structuredClone(DEFAULT_DATA),...parsed,
+      team:{...DEFAULT_DATA.team,...parsed.team},
+      match:{...DEFAULT_DATA.match,...parsed.match},
+      tactics:{...DEFAULT_DATA.tactics,...parsed.tactics},
+      backend:{...DEFAULT_DATA.backend,...parsed.backend},
+      players:Array.isArray(parsed.players)?parsed.players:[],
+      tests:Array.isArray(parsed.tests)?parsed.tests:[]
     };
-  } catch (error) {
-    console.error("Impossible de charger les données locales.", error);
-    return clone(DEFAULT_STATE);
+  }catch(e){return structuredClone(DEFAULT_DATA)}
+}
+function persist(){
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify(data));
+    renderDashboard();
+  }catch(e){alert("Impossible de sauvegarder les données locales. Vérifie l'espace disponible du navigateur.")}
+}
+function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function averagePlayer(p){
+  const vals=["speed","endurance","technique","tactics","power","agility"].map(k=>Number(p[k]??50));
+  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+function getPlayer(id){return data.players.find(p=>p.id===id)}
+function go(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(id==="players")renderPlayers();
+  if(id==="lineup")renderLineup();
+  if(id==="tests")renderTests();
+  if(id==="team")fillTeam();
+  if(id==="tactics")fillTactics();
+  if(id==="scorenco")renderScore();
+  if(id==="account")fillBackend();
+  renderDashboard();
+}
+function renderDashboard(){
+  const n=document.getElementById("homePlayers");
+  if(!n)return;
+  n.textContent=data.players.length;
+  n=document.getElementById("homeRating");
+  const avg=data.players.length?Math.round(data.players.reduce((s,p)=>s+averagePlayer(p),0)/data.players.length):null;
+  n.textContent=avg===null?"—":avg+"/100";
+  document.getElementById("homeTests").textContent=data.tests.length;
+}
+function fillTeam(){
+  for(const [key,id] of Object.entries({name:"clubName",category:"clubCategory",league:"clubLeague",season:"clubSeason",notes:"clubNotes"}))
+    document.getElementById(id).value=data.team[key]||"";
+}
+document.getElementById("teamForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  data.team={name:clubName.value.trim(),category:clubCategory.value.trim(),league:clubLeague.value.trim(),season:clubSeason.value.trim(),notes:clubNotes.value.trim()};
+  persist();alert("Informations de l'équipe enregistrées.");
+});
+function openPlayerForm(player=null){
+  const card=document.getElementById("playerFormCard");
+  card.classList.remove("hidden");
+  document.getElementById("playerFormTitle").textContent=player?"Modifier le joueur":"Nouveau joueur";
+  document.getElementById("playerForm").reset();
+  playerId.value=player?.id||"";
+  const fields={Name:"name",Number:"number",Position:"position",Status:"status",Age:"age",Foot:"foot",Speed:"speed",Endurance:"endurance",Technique:"technique",Tactics:"tactics",Power:"power",Agility:"agility",Notes:"notes"};
+  for(const [suffix,key] of Object.entries(fields)){
+    const el=document.getElementById("p"+suffix);
+    if(player&&player[key]!==undefined)el.value=player[key];
+    else if(["Speed","Endurance","Technique","Tactics","Power","Agility"].includes(suffix))el.value=50;
   }
+  card.scrollIntoView({behavior:"smooth",block:"start"});
 }
-
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    return true;
-  } catch (error) {
-    showMessage(
-      "La sauvegarde locale a échoué. Exporte tes données pour éviter de les perdre.",
-      "error"
-    );
-    return false;
-  }
-}
-
-function makeId() {
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return window.crypto.randomUUID();
-  }
-  return "p-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
-}
-
-function clamp(value, min = 0, max = 100) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return min;
-  return Math.max(min, Math.min(max, number));
-}
-
-function numberOrZero(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function playerRating(player) {
-  if (!player) return 0;
-  const manual = Number(player.manualRating);
-  return Number.isFinite(manual) ? clamp(manual) : 50;
-}
-
-function average(values) {
-  if (!values.length) return 0;
-  return values.reduce((total, value) => total + value, 0) / values.length;
-}
-
-function statusLabel(status) {
-  return {
-    available: "Disponible",
-    injured: "Blessé",
-    unavailable: "Indisponible",
-    doubtful: "Incertain"
-  }[status] || "Disponible";
-}
-
-function statusBadge(status) {
-  const className = {
-    available: "badge-green",
-    injured: "badge-red",
-    unavailable: "badge-red",
-    doubtful: "badge-yellow"
-  }[status] || "";
-  return '<span class="badge ' + className + '">' +
-    escapeHTML(statusLabel(status)) + "</span>";
-}
-
-function isEligible(player) {
-  return player.status === "available";
-}
-
-function getAvailablePlayers() {
-  return state.players.filter(isEligible);
-}
-
-function getPositionGroup(position) {
-  if (position === "Gardien") return "GK";
-  if (position === "Défenseur central") return "CB";
-  if (position === "Latéral droit") return "RB";
-  if (position === "Latéral gauche") return "LB";
-  if (position === "Milieu défensif") return "DM";
-  if (position === "Milieu central") return "CM";
-  if (position === "Milieu offensif") return "AM";
-  if (position === "Ailier droit") return "RW";
-  if (position === "Ailier gauche") return "LW";
-  if (position === "Avant-centre") return "ST";
-  return "CM";
-}
-
-function getPositionCompatibility(player, role) {
-  const primary = getPositionGroup(player.position);
-  const secondary = getPositionGroup(player.secondaryPosition);
-
-  const compatible = {
-    GK: ["GK"],
-    CB: ["CB"],
-    RB: ["RB", "LB", "RM", "RW"],
-    LB: ["LB", "RB", "LM", "LW"],
-    DM: ["DM", "CM", "CB"],
-    CM: ["CM", "DM", "AM", "LM", "RM"],
-    AM: ["AM", "CM", "ST", "LW", "RW"],
-    RW: ["RW", "LW", "AM", "ST", "RM"],
-    LW: ["LW", "RW", "AM", "ST", "LM"],
-    ST: ["ST", "AM", "RW", "LW"],
-    RM: ["RW", "RM", "CM", "RB"],
-    LM: ["LW", "LM", "CM", "LB"]
+function closePlayerForm(){document.getElementById("playerFormCard").classList.add("hidden")}
+document.getElementById("playerForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const id=playerId.value||uid();
+  const player={
+    id,name:pName.value.trim(),number:pNumber.value?Number(pNumber.value):"",
+    position:pPosition.value,status:pStatus.value,age:pAge.value?Number(pAge.value):"",
+    foot:pFoot.value,speed:bounded(pSpeed.value),endurance:bounded(pEndurance.value),
+    technique:bounded(pTechnique.value),tactics:bounded(pTactics.value),
+    power:bounded(pPower.value),agility:bounded(pAgility.value),notes:pNotes.value.trim()
   };
-
-  if (primary === role) return 32;
-  if (secondary === role) return 23;
-  if ((compatible[role] || []).includes(primary)) return 13;
-  if ((compatible[role] || []).includes(secondary)) return 9;
-  return 0;
+  const i=data.players.findIndex(p=>p.id===id);
+  if(i>=0)data.players[i]=player;else data.players.push(player);
+  if(!Array.isArray(data.match.slots))data.match.slots=[];
+  persist();closePlayerForm();renderPlayers();renderLineup();
+});
+function bounded(v){return Math.max(0,Math.min(100,Number(v)||0))}
+function deletePlayer(id){
+  const p=getPlayer(id);if(!p)return;
+  if(!confirm("Supprimer "+p.name+" ? Ses tests seront conservés dans l'historique."))return;
+  data.players=data.players.filter(x=>x.id!==id);
+  persist();renderPlayers();renderLineup();
 }
-
-function getRoleAttributeScore(player, role) {
-  const a = player.attributes || {};
-  const speed = clamp(a.speed ?? 50);
-  const physical = clamp(a.physical ?? 50);
-  const technique = clamp(a.technique ?? 50);
-  const passing = clamp(a.passing ?? 50);
-  const defense = clamp(a.defense ?? 50);
-  const finishing = clamp(a.finishing ?? 50);
-  const goalkeeper = clamp(a.goalkeeper ?? 20);
-
-  const weights = {
-    GK: [0.05, 0.15, 0.05, 0.05, 0.10, 0.00, 0.60],
-    CB: [0.10, 0.20, 0.10, 0.10, 0.45, 0.00, 0.05],
-    RB: [0.20, 0.15, 0.12, 0.12, 0.32, 0.04, 0.05],
-    LB: [0.20, 0.15, 0.12, 0.12, 0.32, 0.04, 0.05],
-    DM: [0.08, 0.15, 0.15, 0.22, 0.35, 0.00, 0.05],
-    CM: [0.10, 0.10, 0.22, 0.30, 0.20, 0.08, 0.00],
-    AM: [0.12, 0.06, 0.28, 0.25, 0.08, 0.21, 0.00],
-    RW: [0.25, 0.08, 0.25, 0.15, 0.05, 0.22, 0.00],
-    LW: [0.25, 0.08, 0.25, 0.15, 0.05, 0.22, 0.00],
-    ST: [0.12, 0.15, 0.16, 0.10, 0.03, 0.44, 0.00],
-    RM: [0.22, 0.10, 0.18, 0.18, 0.15, 0.17, 0.00],
-    LM: [0.22, 0.10, 0.18, 0.18, 0.15, 0.17, 0.00]
+function renderPlayers(){
+  const list=document.getElementById("playerList");
+  if(!list)return;
+  const q=(document.getElementById("playerSearch")?.value||"").toLowerCase();
+  const pos=document.getElementById("positionFilter")?.value||"";
+  const players=data.players.filter(p=>(p.name||"").toLowerCase().includes(q)&&(!pos||p.position===pos));
+  if(!players.length){list.innerHTML='<div class="empty" style="grid-column:1/-1">Aucun joueur ici.<br>Ajoute ton premier joueur pour commencer.</div>';return}
+  list.innerHTML=players.map(p=>`<article class="player-item">
+    <div class="player-item-top"><div class="avatar">${esc((p.name||"?").slice(0,1).toUpperCase())}</div><div class="info"><strong>${esc(p.name)}</strong><span class="sub">${esc(p.position)} · ${p.number?("#"+esc(p.number)+" · "):""}${p.age?esc(p.age)+" ans · ":""}${esc(p.foot||"")}</span></div><div class="rating">${averagePlayer(p)}<small>/100</small></div></div>
+    <div class="progress"><div style="width:${averagePlayer(p)}%"></div></div>
+    <div class="toolbar"><span class="tag ${p.status==="Disponible"?"good":p.status==="Blessé"?"bad":""}">${esc(p.status)}</span><span class="tag">Vit. ${p.speed}</span><span class="tag">End. ${p.endurance}</span><span class="tag">Tech. ${p.technique}</span></div>
+    ${p.notes?`<p class="sub">${esc(p.notes)}</p>`:""}
+    <div class="player-actions"><button class="btn small" onclick="openPlayerForm(getPlayer('${p.id}'))">Modifier</button><button class="btn small danger" onclick="deletePlayer('${p.id}')">Supprimer</button></div>
+  </article>`).join("");
+}
+function saveMatch(){
+  data.match.opponent=document.getElementById("matchOpponent").value;
+  data.match.date=document.getElementById("matchDate").value;
+  data.match.formation=document.getElementById("formation").value;
+  persist();
+}
+const FORMATIONS={
+ "4-3-3":[["Gardien"],["Défenseur","Défenseur","Défenseur","Défenseur"],["Milieu","Milieu","Milieu"],["Attaquant","Attaquant","Attaquant"]],
+ "4-2-3-1":[["Gardien"],["Défenseur","Défenseur","Défenseur","Défenseur"],["Milieu","Milieu"],["Attaquant","Milieu","Attaquant"],["Attaquant"]],
+ "4-4-2":[["Gardien"],["Défenseur","Défenseur","Défenseur","Défenseur"],["Milieu","Milieu","Milieu","Milieu"],["Attaquant","Attaquant"]],
+ "3-5-2":[["Gardien"],["Défenseur","Défenseur","Défenseur"],["Milieu","Milieu","Milieu","Milieu","Milieu"],["Attaquant","Attaquant"]],
+ "3-4-3":[["Gardien"],["Défenseur","Défenseur","Défenseur"],["Milieu","Milieu","Milieu","Milieu"],["Attaquant","Attaquant","Attaquant"]],
+ "5-3-2":[["Gardien"],["Défenseur","Défenseur","Défenseur","Défenseur","Défenseur"],["Milieu","Milieu","Milieu"],["Attaquant","Attaquant"]]
+};
+function eligiblePlayers(){return data.players.filter(p=>p.status==="Disponible"||p.status==="Incertain")}
+function renderLineup(){
+  const formation=document.getElementById("formation");
+  if(!formation)return;
+  formation.value=data.match.formation||"4-3-3";
+  document.getElementById("matchOpponent").value=data.match.opponent||"";
+  document.getElementById("matchDate").value=data.match.date||"";
+  const lines=FORMATIONS[formation.value]||FORMATIONS["4-3-3"];
+  const selected=eligiblePlayers();
+  if(!Array.isArray(data.match.slots))data.match.slots=[];
+  const count=lines.reduce((s,l)=>s+l.length,0);
+  while(data.match.slots.length<count)data.match.slots.push("");
+  data.match.slots=data.match.slots.slice(0,count);
+  let idx=0, total=0, n=0;
+  document.getElementById("pitchLineup").innerHTML=lines.map(line=>`<div class="line">${line.map(role=>{
+    const slotIndex=idx++, selectedId=data.match.slots[slotIndex]||"";
+    const options=selected.map(p=>`<option value="${p.id}" ${p.id===selectedId?"selected":""}>${esc(p.name)}</option>`).join("");
+    const player=getPlayer(selectedId);
+    if(player){total+=averagePlayer(player);n++}
+    return `<div class="slot"><strong>${player?esc(player.name):esc(role)}</strong><select aria-label="Joueur pour ${role}" onchange="setSlot(${slotIndex},this.value)"><option value="">— Choisir —</option>${options}</select></div>`;
+  }).join("")}</div>`).join("");
+  document.getElementById("lineupRating").textContent="Note moyenne : "+(n?Math.round(total/n)+"/100":"—");
+  const selectedSet=new Set(data.match.slots.filter(Boolean));
+  const bench=eligiblePlayers().filter(p=>!selectedSet.has(p.id));
+  document.getElementById("benchList").innerHTML=bench.length?bench.map(p=>`<div class="player-item player-card"><div class="avatar">${esc((p.name||"?")[0])}</div><div class="info"><strong>${esc(p.name)}</strong><small>${esc(p.position)} · ${averagePlayer(p)}/100</small></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">Aucun autre joueur disponible.</div>';
+}
+function setSlot(i,id){data.match.slots[i]=id;saveMatch();renderLineup()}
+function fillTactics(){
+  for(const [key,id] of Object.entries({style:"tStyle",intensity:"tIntensity",width:"tWidth",block:"tBlock",instructions:"tInstructions"}))
+    document.getElementById(id).value=data.tactics[key]||"";
+  renderTacticSummary();
+}
+document.getElementById("tacticForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  data.tactics={style:tStyle.value,intensity:tIntensity.value,width:tWidth.value,block:tBlock.value,instructions:tInstructions.value.trim()};
+  persist();renderTacticSummary();alert("Consignes tactiques enregistrées.");
+});
+function renderTacticSummary(){
+  const t=data.tactics;
+  document.getElementById("tacticSummary").innerHTML=`<strong>Plan enregistré :</strong> ${esc(t.style)} · Intensité ${esc(t.intensity)} · Largeur ${esc(t.width)} · Bloc ${esc(t.block)}<br>${esc(t.instructions||"Aucune consigne complémentaire.")}`;
+}
+function renderTests(){
+  const select=document.getElementById("testPlayer");
+  select.innerHTML=data.players.length?data.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join(""):'<option value="">Ajoute d’abord un joueur</option>';
+  const hist=document.getElementById("testHistory");
+  const sorted=[...data.tests].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  hist.innerHTML=sorted.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Joueur</th><th>Test</th><th>Résultat</th><th>Notes</th><th></th></tr></thead><tbody>${sorted.map(t=>`<tr><td>${esc(t.date)}</td><td>${esc(getPlayer(t.playerId)?.name||"Joueur supprimé")}</td><td>${esc(t.type)}</td><td><strong>${esc(t.value)}</strong></td><td>${esc(t.notes||"—")}</td><td><button class="btn small danger" onclick="deleteTest('${t.id}')">Supprimer</button></td></tr>`).join("")}</tbody></table></div>`:'<div class="empty">Aucun test enregistré pour le moment.</div>';
+}
+document.getElementById("testDate").value=new Date().toISOString().slice(0,10);
+document.getElementById("testForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  if(!data.players.length){alert("Ajoute d'abord un joueur.");return}
+  data.tests.push({id:uid(),playerId:testPlayer.value,type:testType.value,value:Number(testValue.value),date:testDate.value,notes:testNotes.value.trim()});
+  persist();renderTests();e.target.reset();document.getElementById("testDate").value=new Date().toISOString().slice(0,10);
+});
+function deleteTest(id){if(!confirm("Supprimer ce résultat ?"))return;data.tests=data.tests.filter(t=>t.id!==id);persist();renderTests()}
+document.getElementById("scoutForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const s={opponent:scoutOpponent.value.trim(),formation:scoutFormation.value.trim(),strength:scoutStrength.value.trim(),weakness:scoutWeakness.value.trim(),notes:scoutNotes.value.trim(),date:new Date().toLocaleDateString("fr-FR")};
+  data.scout=s;
+  const ideas=[];
+  if(s.weakness.toLowerCase().match(/espace|profondeur|vitesse|lent|latéral|derrière/))ideas.push("Tester les appels dans la profondeur et les courses dans les espaces identifiés.");
+  if(s.weakness.toLowerCase().match(/pression|pressing|relance|erreur/))ideas.push("Observer la relance adverse et choisir les déclencheurs de pressing.");
+  if(s.strength.toLowerCase().match(/centre|aérien|corner|coup de pied arrêté/))ideas.push("Préparer le marquage et l'organisation défensive sur les centres et phases arrêtées.");
+  if(!ideas.length)ideas.push("Compléter les observations vidéo et vérifier ces hypothèses avant de les utiliser en match.");
+  lastScoutReport=`RAPPORT FOOTLAB — ${s.opponent}\nDate : ${s.date}\nFormation : ${s.formation||"Non renseignée"}\nPoints forts : ${s.strength||"Non renseignés"}\nPoints faibles : ${s.weakness||"Non renseignés"}\nObservations : ${s.notes||"Aucune"}\n\nPISTES À EXAMINER\n- ${ideas.join("\n- ")}\n\nRapport établi à partir des observations saisies, à vérifier avant le match.`;
+  document.getElementById("scoutReport").innerHTML=`<p><strong>${esc(s.opponent)}</strong> · ${esc(s.date)}</p><p><b>Formation :</b> ${esc(s.formation||"Non renseignée")}</p><p><b>Points forts :</b> ${esc(s.strength||"Non renseignés")}</p><p><b>Points faibles :</b> ${esc(s.weakness||"Non renseignés")}</p><p><b>Observations :</b> ${esc(s.notes||"Aucune")}</p><hr><b>Pistes à examiner</b><ul>${ideas.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><small>Hypothèses fondées sur tes observations, à vérifier.</small>`;
+  persist();
+});
+function copyScout(){if(!lastScoutReport){alert("Crée d'abord un rapport.");return}navigator.clipboard?.writeText(lastScoutReport).then(()=>alert("Rapport copié.")).catch(()=>alert(lastScoutReport))}
+document.getElementById("scoreForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const url=scoreUrl.value.trim();
+  if(url&&!isHttpUrl(url)){alert("Saisis une URL HTTPS ou HTTP valide.");return}
+  data.scoreUrl=url;persist();renderScore();alert("Lien enregistré.");
+});
+function isHttpUrl(s){try{return ["http:","https:"].includes(new URL(s).protocol)}catch{return false}}
+function openScore(){
+  const url=data.scoreUrl||"https://www.scorenco.com/";
+  if(!isHttpUrl(url)){alert("Configure d'abord une URL valide.");return}
+  window.open(url,"_blank","noopener,noreferrer");
+}
+function renderScore(){
+  document.getElementById("scoreUrl").value=data.scoreUrl||"";
+  const box=document.getElementById("scorePreview");
+  if(!data.scoreUrl){box.className="empty";box.textContent="Aucun lien configuré.";return}
+  box.className="";
+  box.innerHTML=`<p class="sub">Si l'intégration est autorisée par Score’n’Co, son aperçu apparaîtra ci-dessous.</p><iframe title="Aperçu Score’n’Co" src="${esc(data.scoreUrl)}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:550px;border:1px solid var(--border);border-radius:10px;background:white" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe><p class="sub">Si rien ne s'affiche, ouvre le site via le bouton ci-dessus ou utilise le code de widget officiel.</p>`;
+}
+function fillBackend(){
+  backendUrl.value=data.backend.url||"";
+  backendKey.value=data.backend.key||"";
+  document.getElementById("authStatus").textContent=cloudUser?"Connecté : "+cloudUser.email:"Aucun compte en ligne connecté.";
+}
+function saveBackend(){
+  const url=backendUrl.value.trim(),key=backendKey.value.trim();
+  if(url&&!isHttpUrl(url)){alert("URL de projet invalide.");return}
+  data.backend={url,key};persist();initSupabase();
+}
+function initSupabase(){
+  const {url,key}=data.backend;
+  if(!url||!key){supabaseClient=null;return}
+  if(!window.supabase){alert("Le module Supabase n'a pas été chargé. Vérifie ta connexion internet et recharge la page.");return}
+  supabaseClient=window.supabase.createClient(url,key);
+  document.getElementById("authStatus").textContent="Configuration enregistrée. Tu peux créer un compte ou te connecter.";
+}
+async function auth(action){
+  if(action==="logout"){
+    if(supabaseClient)await supabaseClient.auth.signOut();
+    cloudUser=null;fillBackend();return;
+  }
+  if(!supabaseClient){alert("Configure d'abord l'URL et la clé publique Supabase.");return}
+  const email=accountEmail.value.trim(),password=accountPassword.value;
+  if(!email||!password){alert("Entre ton e-mail et ton mot de passe.");return}
+  if(password.length<8){alert("Utilise un mot de passe d'au moins 8 caractères.");return}
+  try{
+    const result=action==="signup"
+      ?await supabaseClient.auth.signUp({email,password})
+      :await supabaseClient.auth.signInWithPassword({email,password});
+    if(result.error)throw result.error;
+    cloudUser=result.data.user||null;
+    document.getElementById("authStatus").textContent=action==="signup"?"Demande de création envoyée. Vérifie ton e-mail si une confirmation est requise.":"Connexion effectuée.";
+    fillBackend();
+  }catch(err){document.getElementById("authStatus").textContent="Connexion impossible : "+err.message}
+}
+async function syncCloud(){
+  if(!supabaseClient||!cloudUser){alert("Connecte-toi à ton compte en ligne avant de synchroniser.");return}
+  alert("L'authentification est configurée, mais la synchronisation complète nécessite de créer la table cloud et ses règles RLS. Elle n'est pas activée par ce fichier seul.");
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="footlab-sauvegarde.json";a.click();URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file=event.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      if(!parsed||!Array.isArray(parsed.players)||!Array.isArray(parsed.tests)||!parsed.team)throw Error("Format de sauvegarde non reconnu");
+      if(!confirm("Remplacer les données locales actuelles par cette sauvegarde ?"))return;
+      data={...structuredClone(DEFAULT_DATA),...parsed,team:{...DEFAULT_DATA.team,...parsed.team},match:{...DEFAULT_DATA.match,...parsed.match},tactics:{...DEFAULT_DATA.tactics,...parsed.tactics},backend:{...DEFAULT_DATA.backend,...parsed.backend}};
+      persist();go("home");alert("Sauvegarde importée.");
+    }catch(err){alert("Import impossible : "+err.message)}
+    event.target.value="";
   };
-
-  const w = weights[role] || weights.CM;
-  return speed * w[0] + physical * w[1] + technique * w[2] +
-    passing * w[3] + defense * w[4] + finishing * w[5] +
-    goalkeeper * w[6];
-}
-
-function getPlayerRoleScore(player, role) {
-  const fit = getPositionCompatibility(player, role);
-  const attributes = getRoleAttributeScore(player, role);
-  const manual = playerRating(player);
-
-  let modeBonus = 0;
-  if (state.team.selectionMode === "best") {
-    modeBonus = manual * 0.16;
-  } else if (state.team.selectionMode === "complementary") {
-    modeBonus = attributes * 0.10;
-  } else if (state.team.selectionMode === "balanced") {
-    modeBonus = attributes * 0.06;
-  } else {
-    modeBonus = fit * 0.20;
-  }
-
-  return fit + attributes * 0.65 + manual * 0.12 + modeBonus;
-}
-
-function getPlayerOverall(player) {
-  const values = ATTRIBUTE_DEFINITIONS.map(item =>
-    clamp((player.attributes || {})[item.key] ?? item.defaultValue)
-  );
-  return Math.round(average(values) * 0.72 + playerRating(player) * 0.28);
-}
-
-function formatDate(dateValue) {
-  if (!dateValue) return "Non précisée";
-  const date = new Date(dateValue + "T12:00:00");
-  if (Number.isNaN(date.getTime())) return escapeHTML(dateValue);
-  return date.toLocaleDateString("fr-FR");
-}
-
-function showMessage(message, type = "success") {
-  const target = document.getElementById("accountMessage");
-  if (!target) return;
-  const className = type === "error" ? "notice danger-notice" :
-    type === "warning" ? "notice" : "notice success-notice";
-  target.innerHTML = '<div class="' + className + '">' +
-    escapeHTML(message) + "</div>";
-}
-
-function setPage(page) {
-  const target = document.getElementById("page-" + page);
-  if (!target) return;
-
-  currentPage = page;
-
-  document.querySelectorAll(".section").forEach(section => {
-    section.classList.toggle("active", section.id === "page-" + page);
-  });
-
-  document.querySelectorAll("[data-page]").forEach(button => {
-    button.classList.toggle("active", button.dataset.page === page);
-  });
-
-  const labels = {
-    dashboard: ["Vue générale", "Retrouve les informations principales de ton équipe."],
-    team: ["Mon équipe", "Configure ton club, ta catégorie et tes critères de sélection."],
-    players: ["Effectif", "Gère les joueurs, les notes et les disponibilités."],
-    compositions: ["Compositions", "Compare les formations et prépare ton onze titulaire."],
-    tactics: ["Tactique", "Définis les consignes et les principes de jeu."],
-    tests: ["Tests physiques", "Enregistre les mesures et suis leur évolution."],
-    scout: ["Scout IA", "Prépare l'analyse d'un adversaire à partir de données vérifiées."],
-    explorer: ["Explorer", "Découvre les fonctionnalités de partage à venir."],
-    account: ["Compte", "Gère les sauvegardes de tes données."]
-  };
-
-  const details = labels[page] || labels.dashboard;
-  document.getElementById("pageTitle").textContent = details[0];
-  document.getElementById("pageDescription").textContent = details[1];
-
-  if (page === "compositions") {
-    renderTopFive();
-  }
-}
-
-function renderDashboard() {
-  const available = getAvailablePlayers();
-  document.getElementById("statPlayers").textContent = state.players.length;
-  document.getElementById("statAvailable").textContent = available.length;
-  document.getElementById("statFormation").textContent = state.formation;
-
-  const team = state.team;
-  document.getElementById("dashboardTeamInfo").innerHTML = `
-    <div class="grid" style="gap:10px">
-      <div><span class="muted small">Équipe</span><br><strong>${escapeHTML(team.name || "Équipe non renseignée")}</strong></div>
-      <div><span class="muted small">Club</span><br>${escapeHTML(team.club || "Non renseigné")}</div>
-      <div><span class="muted small">Catégorie et division</span><br>${escapeHTML(team.category || "Non renseignée")} · ${escapeHTML(team.division || "Division non renseignée")}</div>
-      <div><span class="muted small">Région</span><br>${escapeHTML(team.region || "Non renseignée")}</div>
-    </div>`;
-
-  const injured = state.players.filter(p => p.status === "injured").length;
-  const unavailable = state.players.filter(p => p.status === "unavailable").length;
-  const doubtful = state.players.filter(p => p.status === "doubtful").length;
-
-  document.getElementById("dashboardAvailability").innerHTML = `
-    <div class="grid" style="gap:12px">
-      <div><div class="toolbar"><span>Blessés</span>${statusBadge("injured")}</div><strong>${injured}</strong></div>
-      <div><div class="toolbar"><span>Indisponibles</span>${statusBadge("unavailable")}</div><strong>${unavailable}</strong></div>
-      <div><div class="toolbar"><span>Incertain</span>${statusBadge("doubtful")}</div><strong>${doubtful}</strong></div>
-      <div class="muted small">${available.length} joueur(s) disponible(s) pour la sélection.</div>
-    </div>`;
-
-  renderDashboardTopFive();
-}
-
-function renderDashboardTopFive() {
-  const target = document.getElementById("dashboardTopFive");
-  const candidates = getTopFormations().slice(0, 5);
-
-  if (!state.players.length) {
-    target.innerHTML = '<div class="empty-state">Ajoute des joueurs pour calculer les meilleures compositions.</div>';
-    return;
-  }
-
-  target.innerHTML = candidates.map((item, index) => `
-    <div class="toolbar" style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <strong>${index + 1}. ${escapeHTML(item.formation)}</strong>
-        <div class="muted small">${escapeHTML(FORMATION_INFO[item.formation].strength)}</div>
-      </div>
-      <div style="text-align:right">
-        <strong>${item.score.toFixed(1)}/100</strong>
-        <div class="progress" style="width:95px"><div style="width:${item.score}%"></div></div>
-      </div>
-    </div>`).join("");
-}
-
-function renderPlayers() {
-  const body = document.getElementById("playersTableBody");
-  const empty = document.getElementById("playersEmpty");
-  const search = (document.getElementById("playerSearch").value || "").trim().toLowerCase();
-  const statusFilter = document.getElementById("playerStatusFilter").value;
-  const positionFilter = document.getElementById("playerPositionFilter").value;
-
-  const players = state.players.filter(player => {
-    const matchesSearch = !search || player.name.toLowerCase().includes(search);
-    const matchesStatus = statusFilter === "all" || player.status === statusFilter;
-    const matchesPosition = positionFilter === "all" ||
-      player.position === positionFilter;
-    return matchesSearch && matchesStatus && matchesPosition;
-  });
-
-  body.innerHTML = players.map(player => `
-    <tr>
-      <td>
-        <strong>${escapeHTML(player.name)}</strong>
-        ${player.returnDate ? `<div class="muted small">Retour prévu : ${formatDate(player.returnDate)}</div>` : ""}
-      </td>
-      <td>${escapeHTML(player.position || "Non précisé")}</td>
-      <td>${Number.isFinite(Number(player.age)) ? escapeHTML(player.age) : "—"}</td>
-      <td>
-        <strong>${playerRating(player)}/100</strong>
-        <div class="progress"><div style="width:${playerRating(player)}%"></div></div>
-      </td>
-      <td>${statusBadge(player.status)}</td>
-      <td>
-        <div class="actions">
-          <button class="btn btn-small" data-edit-player="${escapeHTML(player.id)}">Modifier</button>
-          <button class="btn btn-small btn-danger" data-delete-player="${escapeHTML(player.id)}">Supprimer</button>
-        </div>
-      </td>
-    </tr>`).join("");
-
-  empty.hidden = players.length !== 0;
-}
-
-function renderAttributeSliders() {
-  const container = document.getElementById("playerAttributes");
-  container.innerHTML = ATTRIBUTE_DEFINITIONS.map(attribute => `
-    <div class="attribute-row">
-      <div class="attribute-heading">
-        <label for="attr-${attribute.key}">${escapeHTML(attribute.label)}</label>
-        <strong id="attr-value-${attribute.key}">${attribute.defaultValue}</strong>
-      </div>
-      <input
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        value="${attribute.defaultValue}"
-        id="attr-${attribute.key}"
-        data-attribute="${attribute.key}">
-    </div>`).join("");
-
-  container.querySelectorAll("[data-attribute]").forEach(input => {
-    input.addEventListener("input", () => {
-      document.getElementById("attr-value-" + input.dataset.attribute).textContent =
-        input.value;
-    });
-  });
-}
-
-function openPlayerModal(playerId = null) {
-  const form = document.getElementById("playerForm");
-  form.reset();
-  currentEditingId = playerId;
-  document.getElementById("playerId").value = playerId || "";
-
-  const player = playerId ? state.players.find(p => p.id === playerId) : null;
-  document.getElementById("playerModalTitle").textContent =
-    player ? "Modifier un joueur" : "Ajouter un joueur";
-
-  ATTRIBUTE_DEFINITIONS.forEach(attribute => {
-    const input = document.getElementById("attr-" + attribute.key);
-    const value = player
-      ? clamp((player.attributes || {})[attribute.key] ?? attribute.defaultValue)
-      : attribute.defaultValue;
-    input.value = value;
-    document.getElementById("attr-value-" + attribute.key).textContent = value;
-  });
-
-  document.getElementById("playerName").value = player?.name || "";
-  document.getElementById("playerAge").value = player?.age ?? 15;
-  document.getElementById("playerPosition").value = player?.position || "Milieu central";
-  document.getElementById("playerSecondary").value = player?.secondaryPosition || "";
-  document.getElementById("playerStatus").value = player?.status || "available";
-  document.getElementById("playerReturnDate").value = player?.returnDate || "";
-  document.getElementById("playerJersey").value = player?.jersey || "";
-  document.getElementById("playerManualRating").value = playerRating(player);
-  document.getElementById("playerNotes").value = player?.notes || "";
-
-  document.getElementById("playerModal").classList.add("open");
-  document.getElementById("playerName").focus();
-}
-
-function closePlayerModal() {
-  document.getElementById("playerModal").classList.remove("open");
-  currentEditingId = null;
-}
-
-function savePlayer(event) {
-  event.preventDefault();
-
-  const name = document.getElementById("playerName").value.trim();
-  if (!name) return;
-
-  const playerId = document.getElementById("playerId").value;
-  const existing = state.players.find(p => p.id === playerId);
-
-  const attributes = {};
-  ATTRIBUTE_DEFINITIONS.forEach(attribute => {
-    attributes[attribute.key] = clamp(
-      document.getElementById("attr-" + attribute.key).value
-    );
-  });
-
-  const player = {
-    id: playerId || makeId(),
-    name,
-    age: clamp(document.getElementById("playerAge").value, 5, 60),
-    position: document.getElementById("playerPosition").value,
-    secondaryPosition: document.getElementById("playerSecondary").value,
-    status: document.getElementById("playerStatus").value,
-    returnDate: document.getElementById("playerReturnDate").value,
-    jersey: document.getElementById("playerJersey").value,
-    manualRating: clamp(document.getElementById("playerManualRating").value),
-    attributes,
-    notes: document.getElementById("playerNotes").value.trim(),
-    createdAt: existing?.createdAt || new Date().toISOString()
-  };
-
-  if (existing) {
-    state.players = state.players.map(p => p.id === playerId ? player : p);
-  } else {
-    state.players.push(player);
-  }
-
-  saveState();
-  closePlayerModal();
-  renderAll();
-}
-
-function deletePlayer(playerId) {
-  const player = state.players.find(p => p.id === playerId);
-  if (!player) return;
-
-  if (!confirm("Supprimer " + player.name + " de l'effectif ?")) return;
-
-  state.players = state.players.filter(p => p.id !== playerId);
-  state.tests = state.tests.filter(test => test.playerId !== playerId);
-  saveState();
-  renderAll();
-}
-
-function fillTeamForm() {
-  const team = state.team;
-  document.getElementById("teamName").value = team.name || "";
-  document.getElementById("teamClub").value = team.club || "";
-  document.getElementById("teamRegion").value = team.region || "";
-  document.getElementById("teamCategory").value = team.category || "U16";
-  document.getElementById("teamDivision").value = team.division || "";
-  document.getElementById("teamCoach").value = team.coach || "";
-  document.getElementById("squadSize").value = String(team.squadSize || 14);
-  document.getElementById("selectionMode").value = team.selectionMode || "balanced";
-  document.getElementById("teamNotes").value = team.notes || "";
-}
-
-function saveTeamForm(event) {
-  event.preventDefault();
-  state.team = {
-    name: document.getElementById("teamName").value.trim(),
-    club: document.getElementById("teamClub").value.trim(),
-    region: document.getElementById("teamRegion").value.trim(),
-    category: document.getElementById("teamCategory").value,
-    division: document.getElementById("teamDivision").value.trim(),
-    coach: document.getElementById("teamCoach").value.trim(),
-    squadSize: Number(document.getElementById("squadSize").value),
-    selectionMode: document.getElementById("selectionMode").value,
-    notes: document.getElementById("teamNotes").value.trim()
-  };
-
-  document.getElementById("compositionCount").value = String(state.team.squadSize);
-  document.getElementById("compositionMode").value = state.team.selectionMode;
-  saveState();
-  renderAll();
-  showMessage("Les informations de l'équipe ont été enregistrées.");
-}
-
-function getFormationScore(formation, lineup) {
-  if (!lineup.length) return 0;
-
-  const roleScores = lineup.map(item =>
-    getPlayerRoleScore(item.player, item.slot.role)
-  );
-  const averageRole = average(roleScores);
-  const averageManual = average(lineup.map(item => playerRating(item.player)));
-  const positionFit = average(lineup.map(item =>
-    getPositionCompatibility(item.player, item.slot.role)
-  ));
-
-  const uniquePositions = new Set(lineup.map(item => item.player.id)).size;
-  const uniqueness = uniquePositions === lineup.length ? 100 : 0;
-
-  let goalkeeperBonus = lineup.some(item => item.slot.role === "GK" &&
-    item.player.position === "Gardien") ? 8 : 0;
-
-  const doubtfulCount = state.players.filter(p => p.status === "doubtful").length;
-  const availabilityBonus = doubtfulCount > 0 ? 0 : 2;
-
-  let balanceBonus = 0;
-  if (state.team.selectionMode === "balanced") {
-    const attributeValues = lineup.map(item => getPlayerOverall(item.player));
-    const spread = Math.max(...attributeValues) - Math.min(...attributeValues);
-    balanceBonus = Math.max(0, 10 - spread * 0.12);
-  } else if (state.team.selectionMode === "best") {
-    balanceBonus = averageManual * 0.04;
-  } else if (state.team.selectionMode === "complementary") {
-    const roles = lineup.map(item => item.slot.role);
-    const distinctRoles = new Set(roles).size;
-    balanceBonus = distinctRoles * 0.25;
-  }
-
-  const raw = averageRole * 0.69 +
-    averageManual * 0.20 +
-    positionFit * 0.10 +
-    goalkeeperBonus +
-    availabilityBonus +
-    balanceBonus;
-
-  return clamp(raw, 0, 100);
-}
-
-function buildLineup(formation) {
-  const slots = FORMATIONS[formation];
-  if (!slots) return [];
-
-  const candidates = getAvailablePlayers().slice();
-  const used = new Set();
-  const lineup = [];
-
-  for (const slot of slots) {
-    const ranked = candidates
-      .filter(player => !used.has(player.id))
-      .map(player => ({
-        player,
-        score: getPlayerRoleScore(player, slot.role)
-      }))
-      .sort((a, b) => b.score - a.score);
-
-    if (!ranked.length) {
-      lineup.push({ slot, player: null });
-      continue;
-    }
-
-    const selected = ranked[0].player;
-    used.add(selected.id);
-    lineup.push({ slot, player: selected });
-  }
-
-  return lineup;
-}
-
-function getTopFormations() {
-  return Object.keys(FORMATIONS).map(formation => {
-    const lineup = buildLineup(formation);
-    const score = getFormationScore(formation, lineup);
-    const selectedCount = lineup.filter(item => item.player).length;
-    const missingCount = lineup.length - selectedCount;
-    const complete = selectedCount === 11;
-
-    return {
-      formation,
-      lineup,
-      score: clamp(score - missingCount * 7, 0, 100),
-      selectedCount,
-      missingCount,
-      complete
-    };
-  }).sort((a, b) => {
-    if (a.complete !== b.complete) return a.complete ? -1 : 1;
-    return b.score - a.score;
-  });
-}
-
-function renderTopFive() {
-  const target = document.getElementById("topFiveResults");
-  const formations = getTopFormations().slice(0, 5);
-
-  if (!state.players.length) {
-    target.innerHTML = '<div class="empty-state">Ajoute des joueurs pour calculer un Top 5 pertinent.</div>';
-    return;
-  }
-
-  target.innerHTML = formations.map((item, index) => {
-    const info = FORMATION_INFO[item.formation];
-    const availableCount = item.lineup.filter(slot => slot.player).length;
-    return `
-      <div class="formation-card" style="margin-bottom:12px">
-        <div class="mini-pitch">
-          ${item.lineup.filter(slot => slot.player).map(slot => `
-            <span class="mini-dot" style="left:${slot.slot.x}%;top:${slot.slot.y}%"></span>
-          `).join("")}
-        </div>
-        <div>
-          <div class="toolbar" style="margin:0 0 4px">
-            <strong>${index + 1}. ${escapeHTML(item.formation)}</strong>
-            <span class="formation-score">${item.score.toFixed(1)}</span>
-          </div>
-          <div class="progress"><div style="width:${item.score}%"></div></div>
-          <p class="muted small">${escapeHTML(info.strength)}</p>
-          <p class="muted small">${escapeHTML(info.style)}</p>
-          <div class="actions">
-            <span class="badge">${availableCount}/11 joueurs</span>
-            ${item.complete ? '<span class="badge badge-green">Onze complet</span>' : '<span class="badge badge-red">Effectif insuffisant</span>'}
-            <button class="btn btn-small btn-primary" data-use-formation="${escapeHTML(item.formation)}">Utiliser cette formation</button>
-          </div>
-        </div>
-      </div>`;
-  }).join("");
-}
-
-function selectFormation(formation) {
-  if (!FORMATIONS[formation]) return;
-
-  state.formation = formation;
-  document.getElementById("formationSelect").value = formation;
-  saveState();
-
-  currentLineup = buildLineup(formation);
-  renderPitch(currentLineup, formation);
-  renderStartingEleven(currentLineup);
-  renderBench(currentLineup);
-  renderTopFive();
-  renderDashboardTopFive();
-
-  document.getElementById("pitchFormationLabel").textContent =
-    "Formation : " + formation;
-  document.getElementById("statFormation").textContent = formation;
-}
-
-function renderPitch(lineup, formation) {
-  const target = document.getElementById("pitchPlayers");
-  target.innerHTML = lineup.map(item => {
-    if (!item.player) return "";
-    const name = item.player.name.split(/\s+/).slice(-1)[0];
-    const jersey = item.player.jersey ? escapeHTML(item.player.jersey) : "";
-    const marker = jersey || escapeHTML(name.slice(0, 3).toUpperCase());
-    return `
-      <div class="player-marker" style="left:${item.slot.x}%;top:${item.slot.y}%">
-        <div class="player-dot">${marker}</div>
-        <div class="player-name">${escapeHTML(item.player.name)}</div>
-      </div>`;
-  }).join("");
-
-  document.getElementById("pitchFormationLabel").textContent =
-    "Formation : " + formation;
-}
-
-function renderStartingEleven(lineup) {
-  const target = document.getElementById("startingEleven");
-  const filled = lineup.filter(item => item.player);
-
-  if (!filled.length) {
-    target.innerHTML = '<div class="empty-state">Aucun joueur disponible.</div>';
-    return;
-  }
-
-  target.innerHTML = `
-    <div class="table-wrap">
-      <table style="min-width:0">
-        <thead><tr><th>Rôle</th><th>Joueur</th><th>Note</th></tr></thead>
-        <tbody>
-          ${lineup.map(item => `
-            <tr>
-              <td>${escapeHTML(item.slot.role)}</td>
-              <td>${item.player ? escapeHTML(item.player.name) : '<span class="badge badge-red">Poste vacant</span>'}</td>
-              <td>${item.player ? playerRating(item.player) + "/100" : "—"}</td>
-            </tr>`).join("")}
-        </tbody>
-      </table>
-    </div>
-    ${filled.length < 11 ? '<p class="notice danger-notice">Il manque ' + (11 - filled.length) + ' joueur(s) disponible(s) pour compléter ce onze.</p>' : ""}`;
-}
-
-function renderBench(lineup) {
-  const target = document.getElementById("selectedBench");
-  const starterIds = new Set(lineup.filter(item => item.player).map(item => item.player.id));
-  const count = Number(document.getElementById("compositionCount").value || state.team.squadSize || 14);
-  const available = getAvailablePlayers()
-    .filter(player => !starterIds.has(player.id))
-    .sort((a, b) => playerRating(b) - playerRating(a));
-
-  const benchLimit = Math.max(0, count - starterIds.size);
-  const bench = available.slice(0, benchLimit);
-
-  if (!bench.length) {
-    target.innerHTML = '<div class="empty-state">Aucun remplaçant disponible pour le moment.</div>';
-    return;
-  }
-
-  target.innerHTML = `
-    <div class="table-wrap">
-      <table style="min-width:0">
-        <thead><tr><th>Joueur</th><th>Poste</th><th>Note</th></tr></thead>
-        <tbody>${bench.map(player => `
-          <tr>
-            <td>${escapeHTML(player.name)}</td>
-            <td>${escapeHTML(player.position)}</td>
-            <td>${playerRating(player)}/100</td>
-          </tr>`).join("")}</tbody>
-      </table>
-    </div>
-    <p class="muted small">${bench.length} remplaçant(s) sélectionné(s).</p>`;
-}
-
-function generateCompositions() {
-  const selectedFormation = document.getElementById("formationSelect").value;
-  const count = Number(document.getElementById("compositionCount").value);
-
-  state.formation = selectedFormation;
-  state.team.squadSize = count;
-  state.team.selectionMode = document.getElementById("compositionMode").value;
-  document.getElementById("squadSize").value = String(count);
-  document.getElementById("selectionMode").value = state.team.selectionMode;
-  saveState();
-
-  selectFormation(selectedFormation);
-  renderDashboardTopFive();
-
-  if (getAvailablePlayers().length < 11) {
-    showMessage("Il faut au moins 11 joueurs disponibles pour composer un onze complet.", "warning");
-  }
-}
-
-function renderTactics() {
-  const tactics = state.tactics;
-  const advice = [];
-
-  if (tactics.pressing === "high") {
-    advice.push("Le pressing haut peut provoquer des récupérations près du but adverse. Assure-toi que les joueurs coordonnent leurs sorties et que la ligne défensive couvre la profondeur.");
-  } else if (tactics.pressing === "low") {
-    advice.push("Le pressing bas favorise un bloc regroupé. Prévois une sortie de balle claire pour éviter de rendre immédiatement le ballon.");
-  } else {
-    advice.push("Le pressing médian permet de choisir les moments où accélérer la pression. Définis un déclencheur collectif, par exemple une passe vers la ligne.");
-  }
-
-  if (tactics.width === "wide") {
-    advice.push("Utilise la largeur pour étirer le bloc adverse. Vérifie la couverture derrière les latéraux et les ailiers.");
-  } else if (tactics.width === "narrow") {
-    advice.push("Un bloc étroit protège l'axe mais peut concéder de l'espace sur les côtés. Les joueurs de couloir doivent être prêts à coulisser.");
-  } else {
-    advice.push("Une largeur équilibrée offre des solutions dans l'axe et sur les côtés. Adapte-la à la façon dont l'adversaire défend.");
-  }
-
-  if (tactics.tempo === "fast") {
-    advice.push("Un tempo rapide favorise les transitions et les prises d'espace. Demande aux joueurs de lever la tête avant la récupération pour identifier la première passe.");
-  } else if (tactics.tempo === "slow") {
-    advice.push("Un tempo plus lent favorise la conservation et le repositionnement. Évite toutefois de devenir prévisible en variant le côté de jeu.");
-  } else {
-    advice.push("Un tempo équilibré permet d'alterner conservation et accélérations lorsque l'espace se libère.");
-  }
-
-  document.getElementById("tacticalAdvice").innerHTML = advice.map(item =>
-    '<p class="muted small">' + escapeHTML(item) + "</p>"
-  ).join("");
-
-  document.getElementById("counterAdvice").textContent =
-    tactics.transition === "counter"
-      ? "À la récupération, cherche rapidement la première passe vers l'avant. Les joueurs proches soutiennent le porteur tandis que les autres attaquent les espaces."
-      : tactics.transition === "possession"
-      ? "À la récupération, sécurise la première passe et crée plusieurs solutions courtes avant de progresser."
-      : "À la récupération, évalue d'abord la présence d'un espace vers l'avant. Si la passe est fermée, conserve le ballon.";
-
-  document.getElementById("defenceAdvice").textContent =
-    tactics.defence === "individual"
-      ? "Définis les responsabilités de marquage tout en conservant une couverture derrière le duel. Évite de suivre un adversaire trop loin de la zone."
-      : tactics.defence === "press"
-      ? "Coordonne les sorties sur le porteur, ferme les lignes de passe proches et conserve une couverture de profondeur."
-      : "Garde des distances courtes entre les lignes, protège l'axe et fais coulisser le bloc ensemble selon le côté du ballon.";
-
-  document.getElementById("attackAdvice").textContent =
-    tactics.width === "wide"
-      ? "Écarte le bloc adverse, crée des triangles sur les côtés et cherche les passes en retrait lorsque la ligne de fond est atteinte."
-      : tactics.width === "narrow"
-      ? "Cherche les combinaisons courtes dans les espaces intérieurs, avec des appels de soutien et une couverture en cas de perte."
-      : "Alterner jeu intérieur et extérieur permet de déplacer le bloc. Veille à conserver des solutions de passe derrière le ballon.";
-
-  const doubts = state.players.filter(p => p.status === "doubtful").length;
-  if (doubts) {
-    document.getElementById("tacticalAdvice").insertAdjacentHTML(
-      "beforeend",
-      '<div class="notice">Attention : ' + doubts +
-      ' joueur(s) incertain(s). Vérifie leur disponibilité avant de valider la composition.</div>'
-    );
-  }
-}
-
-function fillTacticsForm() {
-  const t = state.tactics;
-  document.getElementById("tacticalPressing").value = t.pressing;
-  document.getElementById("tacticalWidth").value = t.width;
-  document.getElementById("tacticalTempo").value = t.tempo;
-  document.getElementById("tacticalDepth").value = t.depth;
-  document.getElementById("tacticalTransition").value = t.transition;
-  document.getElementById("tacticalDefence").value = t.defence;
-}
-
-function saveTacticsForm(event) {
-  event.preventDefault();
-  state.tactics = {
-    pressing: document.getElementById("tacticalPressing").value,
-    width: document.getElementById("tacticalWidth").value,
-    tempo: document.getElementById("tacticalTempo").value,
-    depth: document.getElementById("tacticalDepth").value,
-    transition: document.getElementById("tacticalTransition").value,
-    defence: document.getElementById("tacticalDefence").value
-  };
-  saveState();
-  renderTactics();
-  showMessage("Les consignes tactiques ont été enregistrées.");
-}
-
-function fillTestPlayerSelect() {
-  const select = document.getElementById("testPlayer");
-  const currentValue = select.value;
-  select.innerHTML = state.players.map(player =>
-    '<option value="' + escapeHTML(player.id) + '">' +
-    escapeHTML(player.name) + "</option>"
-  ).join("");
-
-  if (!state.players.length) {
-    select.innerHTML = '<option value="">Ajoute d’abord un joueur</option>';
-  } else if (state.players.some(player => player.id === currentValue)) {
-    select.value = currentValue;
-  }
-}
-
-function saveTest(event) {
-  event.preventDefault();
-  const playerId = document.getElementById("testPlayer").value;
-  const player = state.players.find(p => p.id === playerId);
-  if (!player) {
-    showMessage("Sélectionne d'abord un joueur.", "warning");
-    return;
-  }
-
-  const value = Number(document.getElementById("testValue").value);
-  if (!Number.isFinite(value)) return;
-
-  const test = {
-    id: makeId(),
-    playerId,
-    playerName: player.name,
-    type: document.getElementById("testType").value,
-    date: document.getElementById("testDate").value,
-    value,
-    unit: document.getElementById("testUnit").value,
-    notes: document.getElementById("testNotes").value.trim()
-  };
-
-  state.tests.push(test);
-  saveState();
-  renderTestHistory();
-  renderManualRatings();
-  document.getElementById("testForm").reset();
-  document.getElementById("testDate").value = new Date().toISOString().slice(0, 10);
-  fillTestPlayerSelect();
-  showMessage("Le test a été enregistré.");
-}
-
-function testTypeLabel(type) {
-  return {
-    sprint10: "Sprint 10 mètres",
-    sprint30: "Sprint 30 mètres",
-    endurance: "Test d'endurance",
-    jump: "Saut",
-    agility: "Agilité",
-    recovery: "Récupération",
-    manual: "Note manuelle"
-  }[type] || "Test";
-}
-
-function renderTestHistory() {
-  const target = document.getElementById("testHistory");
-  const tests = state.tests.slice().sort((a, b) =>
-    String(b.date).localeCompare(String(a.date))
-  );
-
-  if (!tests.length) {
-    target.innerHTML = '<div class="empty-state">Aucun test enregistré pour le moment.</div>';
-    return;
-  }
-
-  target.innerHTML = tests.map(test => `
-    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
-      <div class="toolbar" style="margin:0">
-        <strong>${escapeHTML(testTypeLabel(test.type))}</strong>
-        <button class="btn btn-small btn-danger" data-delete-test="${escapeHTML(test.id)}">Supprimer</button>
-      </div>
-      <div class="muted small">${escapeHTML(test.playerName)} · ${formatDate(test.date)}</div>
-      <div style="margin-top:5px"><strong>${escapeHTML(test.value)} ${escapeHTML(test.unit)}</strong></div>
-      ${test.notes ? '<div class="muted small">' + escapeHTML(test.notes) + "</div>" : ""}
-    </div>`).join("");
-}
-
-function deleteTest(testId) {
-  state.tests = state.tests.filter(test => test.id !== testId);
-  saveState();
-  renderTestHistory();
-  renderManualRatings();
-}
-
-function renderManualRatings() {
-  const target = document.getElementById("manualRatings");
-  const players = state.players;
-
-  if (!players.length) {
-    target.innerHTML = '<div class="empty-state">Ajoute un joueur pour gérer sa note manuelle.</div>';
-    return;
-  }
-
-  target.innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Joueur</th><th>Note actuelle</th><th>Nouvelle note</th><th>Action</th></tr></thead>
-        <tbody>
-          ${players.map(player => `
-            <tr>
-              <td>${escapeHTML(player.name)}</td>
-              <td>${playerRating(player)}/100</td>
-              <td><input type="number" min="0" max="100" value="${playerRating(player)}" data-manual-rating="${escapeHTML(player.id)}" aria-label="Note de ${escapeHTML(player.name)}" style="width:90px;background:#111711;color:white;border:1px solid var(--border);padding:7px;border-radius:6px"></td>
-              <td><button class="btn btn-small" data-save-rating="${escapeHTML(player.id)}">Enregistrer</button></td>
-            </tr>`).join("")}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function saveManualRating(playerId) {
-  const input = document.querySelector('[data-manual-rating="' + CSS.escape(playerId) + '"]');
-  const player = state.players.find(p => p.id === playerId);
-  if (!input || !player) return;
-
-  player.manualRating = clamp(input.value);
-  saveState();
-  renderAll();
-}
-
-function fillOpponentForm() {
-  const opponent = state.opponent;
-  document.getElementById("opponentName").value = opponent.name || "";
-  document.getElementById("opponentCategory").value = opponent.category || "U16";
-  document.getElementById("opponentPlayed").value = opponent.played ?? 0;
-  document.getElementById("opponentPoints").value = opponent.points ?? 0;
-  document.getElementById("opponentGoalsFor").value = opponent.goalsFor ?? 0;
-  document.getElementById("opponentGoalsAgainst").value = opponent.goalsAgainst ?? 0;
-  document.getElementById("opponentRank").value = opponent.rank || "";
-  document.getElementById("opponentTotalTeams").value = opponent.totalTeams || "";
-  document.getElementById("opponentNotes").value = opponent.notes || "";
-}
-
-function analyzeOpponent(event) {
-  event.preventDefault();
-
-  state.opponent = {
-    name: document.getElementById("opponentName").value.trim(),
-    category: document.getElementById("opponentCategory").value,
-    played: Math.max(0, numberOrZero(document.getElementById("opponentPlayed").value)),
-    points: Math.max(0, numberOrZero(document.getElementById("opponentPoints").value)),
-    goalsFor: Math.max(0, numberOrZero(document.getElementById("opponentGoalsFor").value)),
-    goalsAgainst: Math.max(0, numberOrZero(document.getElementById("opponentGoalsAgainst").value)),
-    rank: document.getElementById("opponentRank").value,
-    totalTeams: document.getElementById("opponentTotalTeams").value,
-    notes: document.getElementById("opponentNotes").value.trim()
-  };
-  state.opponentAnalyzed = true;
-  saveState();
-  renderScoutReport();
-}
-
-function renderScoutReport() {
-  const target = document.getElementById("scoutReport");
-  const opponent = state.opponent;
-
-  if (!state.opponentAnalyzed || !opponent.name) {
-    target.innerHTML = '<div class="empty-state">Renseigne le nom exact de l’adversaire et ses statistiques pour obtenir un rapport.</div>';
-    return;
-  }
-
-  const played = numberOrZero(opponent.played);
-  const goalsForAverage = played ? opponent.goalsFor / played : 0;
-  const goalsAgainstAverage = played ? opponent.goalsAgainst / played : 0;
-  const goalDifference = opponent.goalsFor - opponent.goalsAgainst;
-
-  let assessment = "Les données disponibles sont insuffisantes pour dégager une tendance fiable.";
-  if (played >= 3) {
-    if (goalsForAverage > goalsAgainstAverage + 0.5) {
-      assessment = "Les chiffres indiquent un bilan offensif supérieur au nombre de buts encaissés sur les matchs renseignés.";
-    } else if (goalsAgainstAverage > goalsForAverage + 0.5) {
-      assessment = "Les chiffres indiquent davantage de buts encaissés que marqués sur les matchs renseignés.";
-    } else {
-      assessment = "Les statistiques de buts sont relativement proches sur les matchs renseignés.";
-    }
-  }
-
-  target.innerHTML = `
-    <div class="toolbar">
-      <div>
-        <h3 class="card-title">${escapeHTML(opponent.name)}</h3>
-        <p class="muted small">Catégorie : ${escapeHTML(opponent.category)}</p>
-      </div>
-      <span class="badge">Données saisies manuellement</span>
-    </div>
-    <div class="grid grid-3">
-      <div class="card"><div class="stat-label">Matchs joués</div><div class="stat-value">${played}</div></div>
-      <div class="card"><div class="stat-label">Buts marqués</div><div class="stat-value">${opponent.goalsFor}</div></div>
-      <div class="card"><div class="stat-label">Buts encaissés</div><div class="stat-value">${opponent.goalsAgainst}</div></div>
-    </div>
-    <div class="grid grid-2" style="margin-top:15px">
-      <div><div class="muted small">Moyenne de buts marqués par match</div><strong>${goalsForAverage.toFixed(2)}</strong></div>
-      <div><div class="muted small">Moyenne de buts encaissés par match</div><strong>${goalsAgainstAverage.toFixed(2)}</strong></div>
-      <div><div class="muted small">Différence de buts</div><strong>${goalDifference > 0 ? "+" : ""}${goalDifference}</strong></div>
-      <div><div class="muted small">Classement renseigné</div><strong>${opponent.rank ? escapeHTML(opponent.rank) + (opponent.totalTeams ? " / " + escapeHTML(opponent.totalTeams) : "") : "Non renseigné"}</strong></div>
-    </div>
-    <div class="notice" style="margin-top:16px">${escapeHTML(assessment)}</div>
-    ${opponent.notes ? '<h3 class="card-title">Observations</h3><p class="muted small">' + escapeHTML(opponent.notes) + "</p>" : ""}
-    <p class="footer-note">Ce rapport repose uniquement sur les chiffres saisis. Il ne confirme pas leur exactitude et ne récupère pas automatiquement les données de Score'n'Co.</p>`;
-}
-
-function exportData() {
-  const payload = {
-    app: "FootLab TACTIQUE",
-    version: 2,
-    exportedAt: new Date().toISOString(),
-    state
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: "application/json"
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "footlab-tactique-sauvegarde.json";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  showMessage("La sauvegarde JSON a été préparée.");
-}
-
-function importDataFile(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(reader.result);
-      const imported = parsed.state || parsed;
-
-      if (!imported || !Array.isArray(imported.players)) {
-        throw new Error("Format de fichier non reconnu.");
-      }
-
-      if (!confirm("Importer ce fichier remplacera les données actuellement enregistrées. Continuer ?")) {
-        return;
-      }
-
-      state = {
-        ...clone(DEFAULT_STATE),
-        ...imported,
-        team: { ...DEFAULT_STATE.team, ...(imported.team || {}) },
-        tactics: { ...DEFAULT_STATE.tactics, ...(imported.tactics || {}) },
-        players: imported.players,
-        tests: Array.isArray(imported.tests) ? imported.tests : [],
-        opponent: { ...DEFAULT_STATE.opponent, ...(imported.opponent || {}) }
-      };
-
-      saveState();
-      fillAllForms();
-      renderAll();
-      showMessage("Les données ont été importées.");
-    } catch (error) {
-      showMessage("Import impossible : " + error.message, "error");
-    }
-  };
-  reader.onerror = () => showMessage("Impossible de lire ce fichier.", "error");
   reader.readAsText(file);
 }
-
-function fillAllForms() {
-  fillTeamForm();
-  fillTacticsForm();
-  fillOpponentForm();
-  document.getElementById("formationSelect").value = state.formation;
-  document.getElementById("compositionCount").value = String(state.team.squadSize || 14);
-  document.getElementById("compositionMode").value = state.team.selectionMode || "balanced";
+function clearData(){
+  if(!confirm("Supprimer toutes les données locales de FootLab sur cet appareil ? Exporte une sauvegarde avant si nécessaire."))return;
+  localStorage.removeItem(STORE_KEY);data=structuredClone(DEFAULT_DATA);
+  persist();location.reload();
 }
-
-function exportPitchPNG() {
-  const lineup = currentLineup || buildLineup(state.formation);
-  const canvas = document.createElement("canvas");
-  const width = 1000;
-  const height = 1250;
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-
-  if (!ctx) {
-    showMessage("L'export de l'image n'est pas disponible dans ce navigateur.", "error");
-    return;
-  }
-
-  ctx.fillStyle = "#24532b";
-  ctx.fillRect(0, 0, width, height);
-
-  for (let i = 0; i < 8; i++) {
-    ctx.fillStyle = i % 2 === 0 ? "#24532b" : "#2a5b31";
-    ctx.fillRect(0, i * height / 8, width, height / 8);
-  }
-
-  ctx.strokeStyle = "rgba(255,255,255,0.8)";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(25, 25, width - 50, height - 50);
-  ctx.beginPath();
-  ctx.moveTo(25, height / 2);
-  ctx.lineTo(width - 25, height / 2);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(width / 2, height / 2, 130, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.strokeRect(width * 0.23, 25, width * 0.54, height * 0.14);
-  ctx.strokeRect(width * 0.23, height * 0.86, width * 0.54, height * 0.14);
-
-  lineup.forEach(item => {
-    if (!item.player) return;
-    const x = width * item.slot.x / 100;
-    const y = height * item.slot.y / 100;
-    ctx.beginPath();
-    ctx.fillStyle = "#eaf5e7";
-    ctx.strokeStyle = "#a4e59b";
-    ctx.lineWidth = 5;
-    ctx.arc(x, y, 29, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#163b1a";
-    ctx.font = "bold 20px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(item.player.jersey || item.player.name.slice(0, 2).toUpperCase(), x, y);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 20px Arial";
-    ctx.textBaseline = "top";
-    ctx.fillText(item.player.name.slice(0, 18), x, y + 38);
-  });
-
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.font = "bold 32px Arial";
-  ctx.fillText("FootLab TACTIQUE — " + state.formation, width / 2, height - 7);
-
-  canvas.toBlob(blob => {
-    if (!blob) {
-      showMessage("Impossible de générer l'image.", "error");
-      return;
-    }
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "footlab-composition-" + state.formation.replace("-", "_") + ".png";
-    link.click();
-    URL.revokeObjectURL(url);
-  }, "image/png");
-}
-
-function openScoreNCo() {
-  const name = document.getElementById("opponentName").value.trim();
-  const query = name ? "Score'n'Co " + name : "Score'n'Co football";
-  const url = "https://www.google.com/search?q=" + encodeURIComponent(query);
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-function renderExplorer() {
-  document.getElementById("explorerContent").innerHTML = `
-    <h3 class="card-title">Espace public</h3>
-    <p class="muted small">Les profils publics et le partage entre utilisateurs nécessitent une base de données en ligne et un système d'authentification. Cette version locale n'expose aucune donnée de joueur à d'autres utilisateurs.</p>
-    <div class="grid grid-2">
-      <div class="card">
-        <strong>Effectif local</strong>
-        <p class="muted small">${state.players.length} joueur(s) enregistré(s) sur cet appareil.</p>
-      </div>
-      <div class="card">
-        <strong>Partage en ligne</strong>
-        <p class="muted small">Non activé. Une configuration sécurisée devra être ajoutée avant de partager des données.</p>
-      </div>
-    </div>`;
-}
-
-function renderAll() {
-  renderDashboard();
+function init(){
+  fillTeam();
+  fillTactics();
   renderPlayers();
-  renderTactics();
-  fillTestPlayerSelect();
-  renderTestHistory();
-  renderManualRatings();
-  renderScoutReport();
-  renderExplorer();
-
-  if (currentLineup) {
-    currentLineup = buildLineup(state.formation);
-    renderPitch(currentLineup, state.formation);
-    renderStartingEleven(currentLineup);
-    renderBench(currentLineup);
+  renderDashboard();
+  renderTests();
+  renderScore();
+  if(data.backend.url&&data.backend.key){
+    backendUrl.value=data.backend.url;backendKey.value=data.backend.key;
+    const script=document.createElement("script");
+    script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    script.onload=initSupabase;
+    script.onerror=()=>document.getElementById("authStatus").textContent="Impossible de charger Supabase.";
+    document.head.appendChild(script);
+  }
+  if(data.scout){
+    scoutOpponent.value=data.scout.opponent||"";
+    scoutFormation.value=data.scout.formation||"";
+    scoutStrength.value=data.scout.strength||"";
+    scoutWeakness.value=data.scout.weakness||"";
+    scoutNotes.value=data.scout.notes||"";
   }
 }
-
-function bindEvents() {
-  document.querySelectorAll("[data-page]").forEach(button => {
-    button.addEventListener("click", () => setPage(button.dataset.page));
-  });
-
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.addEventListener("click", () => setPage(button.dataset.goto));
-  });
-
-  document.getElementById("addPlayerBtn").addEventListener("click", () => openPlayerModal());
-  document.getElementById("addPlayerBtn2").addEventListener("click", () => openPlayerModal());
-  document.getElementById("closePlayerModal").addEventListener("click", closePlayerModal);
-  document.getElementById("cancelPlayer").addEventListener("click", closePlayerModal);
-  document.getElementById("playerForm").addEventListener("submit", savePlayer);
-  document.getElementById("teamForm").addEventListener("submit", saveTeamForm);
-  document.getElementById("tacticsForm").addEventListener("submit", saveTacticsForm);
-  document.getElementById("testForm").addEventListener("submit", saveTest);
-  document.getElementById("opponentForm").addEventListener("submit", analyzeOpponent);
-
-  document.getElementById("playerSearch").addEventListener("input", renderPlayers);
-  document.getElementById("playerStatusFilter").addEventListener("change", renderPlayers);
-  document.getElementById("playerPositionFilter").addEventListener("change", renderPlayers);
-
-  document.getElementById("generateCompositions").addEventListener("click", generateCompositions);
-  document.getElementById("formationSelect").addEventListener("change", event => {
-    selectFormation(event.target.value);
-  });
-
-  document.getElementById("compositionCount").addEventListener("change", () => {
-    if (currentLineup) renderBench(currentLineup);
-  });
-
-  document.getElementById("compositionMode").addEventListener("change", event => {
-    state.team.selectionMode = event.target.value;
-    saveState();
-  });
-
-  document.getElementById("exportPitch").addEventListener("click", exportPitchPNG);
-  document.getElementById("exportDataBtn").addEventListener("click", exportData);
-  document.getElementById("exportDataBtn2").addEventListener("click", exportData);
-
-  document.getElementById("importDataBtn").addEventListener("click", () => {
-    document.getElementById("importFile").click();
-  });
-
-  document.getElementById("importFile").addEventListener("change", event => {
-    importDataFile(event.target.files[0]);
-    event.target.value = "";
-  });
-
-  document.getElementById("openScoreNCo").addEventListener("click", openScoreNCo);
-
-  document.getElementById("playerModal").addEventListener("click", event => {
-    if (event.target.id === "playerModal") closePlayerModal();
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closePlayerModal();
-  });
-
-  document.addEventListener("click", event => {
-    const editButton = event.target.closest("[data-edit-player]");
-    if (editButton) {
-      openPlayerModal(editButton.dataset.editPlayer);
-      return;
-    }
-
-    const deleteButton = event.target.closest("[data-delete-player]");
-    if (deleteButton) {
-      deletePlayer(deleteButton.dataset.deletePlayer);
-      return;
-    }
-
-    const formationButton = event.target.closest("[data-use-formation]");
-    if (formationButton) {
-      selectFormation(formationButton.dataset.useFormation);
-      setPage("compositions");
-      return;
-    }
-
-    const deleteTestButton = event.target.closest("[data-delete-test]");
-    if (deleteTestButton) {
-      if (confirm("Supprimer ce test ?")) deleteTest(deleteTestButton.dataset.deleteTest);
-      return;
-    }
-
-    const ratingButton = event.target.closest("[data-save-rating]");
-    if (ratingButton) {
-      saveManualRating(ratingButton.dataset.saveRating);
-    }
-  });
-}
-
-function initializeApp() {
-  renderAttributeSliders();
-  fillAllForms();
-  bindEvents();
-
-  document.getElementById("testDate").value = new Date().toISOString().slice(0, 10);
-
-  renderAll();
-  selectFormation(state.formation || "4-3-3");
-
-  if (!state.players.length) {
-    document.getElementById("topFiveResults").innerHTML =
-      '<div class="empty-state">Ton effectif est vide. Ajoute tes joueurs pour commencer l’analyse.</div>';
-  }
-}
-
-initializeApp();
+init();
 </script>
-
 </body>
 </html>
