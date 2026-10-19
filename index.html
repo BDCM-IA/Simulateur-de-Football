@@ -295,12 +295,7 @@ hr{border:0;border-top:1px solid var(--border);margin:20px 0}
     <div class="grid two">
       <div class="card">
         <h3>Connexion sécurisée</h3>
-        <div class="notice">Cette version sauvegarde tes données sur cet appareil. Les comptes permanents entre plusieurs appareils nécessitent un service d'authentification et une base de données en ligne.</div>
-        <hr>
-        <div class="field"><label for="backendUrl">URL du projet Supabase</label><input id="backendUrl" type="url" placeholder="https://xxxx.supabase.co"></div>
-        <div class="field"><label for="backendKey">Clé publique / publishable</label><input id="backendKey" placeholder="Clé publique Supabase" autocomplete="off"></div>
-        <p class="sub">N'utilise jamais une clé secrète « service_role » dans ce fichier. Configure aussi les règles d'accès de la base de données avant d'y stocker des données personnelles.</p>
-        <div class="actions"><button class="btn" onclick="saveBackend()">Enregistrer la configuration</button></div>
+        <div class="notice">Connexion Supabase intégrée à FootLab. Crée un compte ou connecte-toi pour synchroniser tes données entre appareils. La clé intégrée est une clé publique ; la sécurité des données dépend aussi des règles RLS de la base.</div>
         <hr>
         <div class="field"><label for="accountEmail">Adresse e-mail</label><input id="accountEmail" type="email" placeholder="toi@exemple.fr" autocomplete="email"></div>
         <div class="field"><label for="accountPassword">Mot de passe</label><input id="accountPassword" type="password" placeholder="Mot de passe" autocomplete="current-password"></div>
@@ -312,11 +307,10 @@ hr{border:0;border-top:1px solid var(--border);margin:20px 0}
         <h3>Ce qui est nécessaire pour activer les comptes</h3>
         <p class="sub">1. Créer un projet Supabase et activer l'authentification par e-mail.</p>
         <p class="sub">2. Créer une table de profils et de données avec des règles RLS pour que chaque utilisateur n'accède qu'à ses propres données.</p>
-        <p class="sub">3. Ajouter l'URL du projet et sa clé publique ci-contre.</p>
-        <p class="sub">4. Configurer les URL de redirection de connexion pour ton site GitHub Pages.</p>
-        <p class="sub">5. Dans Supabase &gt; SQL Editor, exécuter le SQL de création de la table <code>teams</code> et des règles RLS fourni avec les instructions sous le fichier.</p>
+        <p class="sub">3. Dans Authentication &gt; URL Configuration, autoriser l'URL de ton site GitHub Pages comme URL de redirection.</p>
+        <p class="sub">4. Dans Supabase &gt; SQL Editor, exécuter le SQL de création de la table <code>teams</code> et des règles RLS fourni avec les instructions du projet.</p>
         <hr>
-        <p class="sub">Cette page ne déclare pas un compte « permanent » tant que le backend n'a pas été configuré et testé. La sauvegarde locale fonctionne indépendamment.</p>
+        <p class="sub">La sauvegarde locale reste disponible. La synchronisation en ligne fonctionnera après création de la table <code>teams</code>, configuration des règles RLS et activation de l'authentification e-mail dans Supabase.</p>
       </div>
     </div>
   </section>
@@ -328,6 +322,10 @@ hr{border:0;border-top:1px solid var(--border);margin:20px 0}
 "use strict";
 
 const STORE_KEY = "footlab_v1";
+// Configuration publique Supabase de FootLab. Utiliser l'URL racine du projet,
+// pas l'endpoint REST /rest/v1/. La clé publishable est conçue pour être publique.
+const SUPABASE_URL = "https://otrkuqoijzhyoxemtyaz.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VwCWJYBP8ZN131AlZJeZJQ__fIRZ2Gv";
 const DEFAULT_DATA = {
   team:{name:"",category:"",league:"",season:"",notes:""},
   players:[], tests:[], match:{formation:"4-3-3",opponent:"",date:"",slots:[]},
@@ -574,25 +572,13 @@ function renderScore(){
   box.innerHTML=`<p class="sub">Si l'intégration est autorisée par Score’n’Co, son aperçu apparaîtra ci-dessous.</p><iframe title="Aperçu Score’n’Co" src="${esc(data.scoreUrl)}" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:550px;border:1px solid var(--border);border-radius:10px;background:white" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe><p class="sub">Si rien ne s'affiche, ouvre le site via le bouton ci-dessus ou utilise le code de widget officiel.</p>`;
 }
 function fillBackend(){
-  backendUrl.value=data.backend.url||"";
-  backendKey.value=data.backend.key||"";
-  document.getElementById("authStatus").textContent=cloudUser?"Connecté : "+cloudUser.email:"Aucun compte en ligne connecté.";
-}
-function saveBackend(){
-  const url=backendUrl.value.trim(),key=backendKey.value.trim();
-  if(url&&!isHttpUrl(url)){alert("URL de projet invalide.");return}
-  data.backend={url,key};persist();initSupabase();
+  const status = document.getElementById("authStatus");
+  if (status) status.textContent = cloudUser ? "Connecté : " + cloudUser.email : "Connexion Supabase intégrée · aucun compte connecté.";
 }
 async function initSupabase(){
   const status = document.getElementById("authStatus");
-  const url = (data.backend.url || "").trim();
-  const key = (data.backend.key || "").trim();
-  if (!url || !key) {
-    supabaseClient = null;
-    cloudReady = false;
-    status.textContent = "La connexion en ligne n'est pas encore configurée.";
-    return;
-  }
+  const url = SUPABASE_URL;
+  const key = SUPABASE_PUBLISHABLE_KEY;
   if (!window.supabase || typeof window.supabase.createClient !== "function") {
     status.textContent = "La bibliothèque Supabase n'a pas été chargée. Recharge la page puis réessaie.";
     return;
@@ -708,7 +694,7 @@ async function loadCloudData(){
 async function saveCloudData(){
   if (!supabaseClient || !cloudUser) throw new Error("Connecte-toi avant de synchroniser.");
   const cloudCopy = JSON.parse(JSON.stringify(data));
-  // La configuration de connexion reste uniquement sur cet appareil.
+  // La configuration publique Supabase est intégrée au code, pas aux données utilisateur.
   cloudCopy.backend = { url: "", key: "" };
   const payload = {
     user_id: cloudUser.id,
@@ -768,9 +754,7 @@ function init(){
   renderDashboard();
   renderTests();
   renderScore();
-  backendUrl.value=data.backend.url||"";
-  backendKey.value=data.backend.key||"";
-  if(data.backend.url && data.backend.key) initSupabase();
+  initSupabase();
   if(data.scout){
     scoutOpponent.value=data.scout.opponent||"";
     scoutFormation.value=data.scout.formation||"";
